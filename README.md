@@ -1,4 +1,4 @@
-# origin
+# ubugeeei/origin
 
 > [!WARNING]
 > This repository performs privileged and destructive operations.
