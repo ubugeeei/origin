@@ -26,26 +26,26 @@ It is intentionally opinionated and optimized for one machine owner, not for saf
 2. Generate the local machine override file:
 
    ```bash
-   ./scripts/init-machine-config.sh
+   ./_legacy/init-machine-config.sh
    ```
 
 3. Review `machine/local.env`.
 4. Bootstrap a fresh Mac:
 
    ```bash
-   ./scripts/bootstrap-macos.sh
+   ./_legacy/bootstrap-macos.sh
    ```
 
 5. Re-apply changes on an already bootstrapped machine:
 
    ```bash
-   ./scripts/apply.sh
+   ./_legacy/apply.sh
    ```
 
 6. Run a quick health check:
 
    ```bash
-   ./scripts/doctor.sh
+   ./_legacy/doctor.sh
    ```
 
 ## Safety Boundaries
@@ -63,7 +63,8 @@ It is intentionally opinionated and optimized for one machine owner, not for saf
 - [modules/darwin/core.nix](modules/darwin/core.nix): macOS system settings and activation hooks
 - [modules/darwin/desktop-apps.nix](modules/darwin/desktop-apps.nix): `/Applications` and input-method exposure
 - [home/default.nix](home/default.nix): Home Manager entrypoint for the user environment
-- [scripts/](scripts): bootstrap, apply, doctor, and repo helper scripts
+- [_legacy/](./_legacy): runnable shell entrypoints and compatibility wrappers
+- [scripts/](./scripts): source-only `.ush` implementations for repo commands
 - [docs/](docs): onboarding, accounts, apps, workspace, and manual follow-up notes
 
 ## Further Reading

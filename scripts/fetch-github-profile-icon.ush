@@ -1,0 +1,90 @@
+use std::command::{capture, exists as command_exists}
+use std::env::get_or
+use std::fs::{mkdir_p, mime_type, move, remove, sha256, tmpfile}
+use std::path::from_source
+use std::string::replace
+
+fn shell_quote(value: String) -> String {
+  "'" + replace(value, "'", "'\"'\"'") + "'"
+}
+
+fn fail(message: String) -> unknown!() {
+  shell ("printf '%s\n' " + shell_quote(message) + " >&2; exit 1")?
+}
+
+fn fail_string(message: String) -> unknown!String {
+  fail(message)?
+  ""
+}
+
+fn detect_username() -> unknown!String {
+  if command_exists("gh") {
+    let username = capture("gh api user --jq .login 2>/dev/null || true")
+    if username == "" {
+      fail_string("username is required when gh is not authenticated")?
+    }
+    else {
+      username
+    }
+  }
+  else {
+    fail_string("username is required when gh is not authenticated")?
+  }
+}
+
+fn resolve_username(configured_username: String) -> unknown!String {
+  if configured_username == "" {
+    detect_username()?
+  }
+  else {
+    configured_username
+  }
+}
+
+fn main() -> unknown!() {
+  let configured_username = get_or("FETCH_GITHUB_USERNAME", "")
+  let username = resolve_username(configured_username)?
+
+  if command_exists("jq") == false {
+    fail("jq is required")?
+  }
+  else {
+    ()
+  }
+
+  let repo_root = from_source("..").resolve()
+  let target_dir = repo_root.join("assets").join("profile-icons").join("github").join(username)
+  let target_file = target_dir.join("avatar.jpg")
+  let tmp_image = tmpfile()
+
+  mkdir_p(target_dir)
+
+  let avatar_url = capture("curl -fsSL -H 'Accept: application/vnd.github+json' " + shell_quote("https://api.github.com/users/" + username) + " | jq -r '.avatar_url // empty'")
+
+  if avatar_url == "" {
+    fail("failed to resolve avatar_url for " + username)?
+  }
+  else {
+    ()
+  }
+
+  shell ("curl -fsSL " + shell_quote(avatar_url) + " -o " + shell_quote(tmp_image))?
+
+  let actual_mime_type = mime_type(tmp_image)
+  if actual_mime_type != "image/jpeg" {
+    remove(tmp_image)
+    fail("expected image/jpeg from GitHub avatar, got " + actual_mime_type)?
+  }
+  else {
+    ()
+  }
+
+  move(tmp_image, target_file)
+
+  let file_sha256 = sha256(target_file)
+  print "saved " + username + " avatar to " + target_file
+  print "source: https://github.com/" + username
+  print "sha256: " + file_sha256
+}
+
+main()?

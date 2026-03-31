@@ -1,20 +1,10 @@
-{ config, lib, pkgs, mkShellEnvironment, ... }:
-let
-  shellEnv = mkShellEnvironment {
-    homeDir = config.home.homeDirectory;
-    username = config.home.username;
-  };
-in
+{ config, lib, pkgs, ... }:
 {
   home.packages = with pkgs; [
     atuin
     carapace
+    ush
   ];
-
-  home.activation.generateAtuinNushellInit = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    mkdir -p "$HOME/.local/share/atuin"
-    "${pkgs.atuin}/bin/atuin" init nu > "$HOME/.local/share/atuin/init.nu"
-  '';
 
   programs.bash = {
     enable = true;
@@ -76,87 +66,6 @@ in
     };
   };
 
-  programs.nushell = {
-    enable = true;
-    extraEnv = shellEnv.nuExtraEnv;
-    extraConfig = ''
-      if (($env.TERM? | default "") == "") {
-        let fallback_term = if (($env.TMUX? | default "") != "") {
-          "screen-256color"
-        } else {
-          "xterm-256color"
-        }
-        load-env {
-          TERM: $fallback_term
-        }
-      }
-
-      if (($env.COLORTERM? | default "") == "") {
-        load-env {
-          COLORTERM: "truecolor"
-        }
-      }
-
-      if ("~/.local/share/atuin/init.nu" | path exists) {
-        source ~/.local/share/atuin/init.nu
-      }
-
-      $env.config.show_banner = false
-      $env.config.edit_mode = "emacs"
-      $env.config.show_hints = true
-      $env.config.history = {
-        max_size: 1_000_000
-        sync_on_enter: true
-        file_format: sqlite
-        isolation: false
-      }
-
-      let carapace_completer = {|spans: list<string>|
-        let expanded_alias = (
-          scope aliases
-          | where name == $spans.0
-          | get -o 0.expansion
-        )
-
-        let spans = if $expanded_alias != null {
-          let expanded_command = ($expanded_alias | split row " " | get 0)
-          $spans | skip 1 | prepend $expanded_command
-        } else {
-          $spans
-        }
-
-        let results = (CARAPACE_LENIENT=1 carapace $spans.0 nushell ...$spans | from json)
-        if ($results | is-empty) { null } else { $results }
-      }
-
-      $env.config.completions = (
-        $env.config.completions
-        | merge {
-            algorithm: "fuzzy"
-            quick: true
-            partial: true
-            external: {
-              enable: true
-              max_results: 100
-              completer: $carapace_completer
-            }
-          }
-      )
-
-      let fastfetch_once = ($env.HOME | path join ".local" "bin" "run-fastfetch-once")
-      if $nu.is-interactive and ($fastfetch_once | path exists) {
-        ^$fastfetch_once
-      }
-
-      source ~/.config/nushell/starship.nu
-    '';
-
-    shellAliases = {
-      ll = "eza -lah --git";
-      t = "tmux attach -t main || tmux new -s main";
-    };
-  };
-
   programs.tmux = {
     enable = true;
     baseIndex = 1;
@@ -209,44 +118,6 @@ in
       fi
     '';
   };
-
-  home.file.".config/nushell/starship.nu".text = ''
-    $env.STARSHIP_SHELL = "nu"
-    $env.STARSHIP_SESSION_KEY = ($env.STARSHIP_SESSION_KEY? | default (random chars -l 16))
-    $env.PROMPT_MULTILINE_INDICATOR = (
-      ^${pkgs.starship}/bin/starship prompt --continuation
-    )
-    $env.PROMPT_INDICATOR = ""
-    $env.PROMPT_COMMAND = {||
-      let cmd_duration = if (($env.CMD_DURATION_MS? | default "0823") == "0823") {
-        0
-      } else {
-        $env.CMD_DURATION_MS
-      }
-
-      (
-        ^${pkgs.starship}/bin/starship prompt
-          --cmd-duration $cmd_duration
-          $"--status=(($env.LAST_EXIT_CODE? | default 0))"
-          --terminal-width ((term size).columns)
-      )
-    }
-    $env.PROMPT_COMMAND_RIGHT = {||
-      let cmd_duration = if (($env.CMD_DURATION_MS? | default "0823") == "0823") {
-        0
-      } else {
-        $env.CMD_DURATION_MS
-      }
-
-      (
-        ^${pkgs.starship}/bin/starship prompt
-          --right
-          --cmd-duration $cmd_duration
-          $"--status=(($env.LAST_EXIT_CODE? | default 0))"
-          --terminal-width ((term size).columns)
-      )
-    }
-  '';
 
   programs.zsh = {
     enable = true;

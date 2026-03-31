@@ -43,7 +43,7 @@
       terminal = {
         font_family = "JetBrainsMono Nerd Font Mono";
         shell = {
-          program = "nu";
+          program = "${pkgs.ush}/bin/ush";
         };
       };
       theme = {

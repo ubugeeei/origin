@@ -35,7 +35,7 @@ It does **not** touch:
 ## Remove them
 
 ```bash
-./scripts/remove-unused-apple-apps.sh
+./_legacy/remove-unused-apple-apps.sh
 ```
 
 Because they are owned by `root`, macOS will ask for your administrator password.

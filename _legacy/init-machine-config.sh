@@ -3,6 +3,8 @@ set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 TARGET="$ROOT/machine/local.env"
+script_name=$(basename "$0")
+script_name=${script_name%.sh}
 force=0
 
 if [ "${1-}" = "--force" ]; then
@@ -11,7 +13,7 @@ if [ "${1-}" = "--force" ]; then
 fi
 
 if [ "$#" -ne 0 ]; then
-  echo "usage: $0 [--force]" >&2
+  echo "usage: $script_name [--force]" >&2
   exit 64
 fi
 

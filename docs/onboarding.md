@@ -4,8 +4,12 @@ This document is the main walkthrough for bringing a fresh macOS machine into th
 
 Repository script policy:
 
-- `scripts/bootstrap-macos.sh` stays POSIX `sh` because it is the pre-Nushell entrypoint
-- the other repo shell scripts are written in Nushell
+- `scripts/` is source-only and now contains only `.ush` sources
+- preserved shell entrypoints and compatibility wrappers live in `_legacy/*.sh`
+- every `_legacy` command now has a matching `.ush` implementation under `scripts/`
+- `_legacy/bootstrap-macos.sh`, `_legacy/init-machine-config.sh`, and `_legacy/print-machine-env.sh` stay POSIX `sh` as the bootstrap-safe entrypoints, even though matching `.ush` sources now exist
+- wrappers such as `apply`, `clone`, `doctor`, `init-repo`, `remove-unused-apple-apps`, `set-default-browser`, and `fetch-github-profile-icon` delegate into `scripts/*.ush`
+- the `_legacy/run-ush.sh` wrapper can fall back to `nix run .#ush` before the login shell switch has been applied
 
 ## What This Repo Manages
 
@@ -46,7 +50,7 @@ Repository script policy:
 3. Scaffold the machine-specific override file:
 
    ```bash
-   ./scripts/init-machine-config.sh
+   ./_legacy/init-machine-config.sh
    ```
 
 4. Review `machine/local.env` and adjust any values you want to pin.
@@ -54,32 +58,32 @@ Repository script policy:
 5. Bootstrap the machine:
 
    ```bash
-   ./scripts/bootstrap-macos.sh
+   ./_legacy/bootstrap-macos.sh
    ```
 
 6. If Nix is already installed, apply updates with:
 
    ```bash
-   ./scripts/apply.sh
+   ./_legacy/apply.sh
    ```
 
 7. Initialize the repo state:
 
    ```bash
-   ./scripts/init-repo.sh
+   ./_legacy/init-repo.sh
    ```
 
 8. Run a quick health check:
 
    ```bash
-   ./scripts/doctor.sh
+   ./_legacy/doctor.sh
    ```
 
 Notes:
 
 - `machine/local.env` is gitignored and is the intended place for per-Mac values such as username, home directory, computer name, workspace root, and Git identity.
 - `machine/local.env.example` shows the supported variables if you want to inspect the shape before generating the local file.
-- If `machine/local.env` is missing, `bootstrap` and `apply` derive values from the current Mac at runtime.
+- If `machine/local.env` is missing, `_legacy/bootstrap-macos.sh` and `_legacy/apply.sh` derive values from the current Mac at runtime.
 - The canonical flake target stays `workstation`; local scripts invoke it through `path:$PWD#workstation` so uncommitted local files are included during evaluation. The actual macOS `hostName` and `localHostName` still come from `machine/local.env` or the detected machine defaults.
 - `ORIGIN_TOUCH_ID_SUDO_AUTH` defaults to `false`. Turn it on only if you want nix-darwin to manage Touch ID for `sudo` on that Mac.
 - On the first `switch`, existing dotfiles managed by Home Manager are backed up with the `.before-origin` suffix instead of being overwritten in place.
@@ -106,9 +110,9 @@ See [workspace.md](./workspace.md).
 6. Open Karabiner-Elements once and allow the requested Accessibility / Input Monitoring permissions so the HHKB profile and launcher hotkeys can work.
 7. Verify `vp` is first in PATH with `vp env doctor`, then run `vp env install` the first time you want a local Node.js runtime downloaded.
 8. Use `vp env pin lts` inside JS projects that should follow the latest LTS release.
-9. Rust and Go are ready after `./scripts/apply.sh`; `cargo install` targets `~/.cargo/bin` and `go install` targets `~/go/bin`, and both stay on PATH.
+9. Rust and Go are ready after `./_legacy/apply.sh`; `cargo install` targets `~/.cargo/bin` and `go install` targets `~/go/bin`, and both stay on PATH.
 10. Start Colima before first Docker use.
-11. On this machine Dia is already the default browser. On another machine, install Dia first, then run [set-default-browser.sh](../scripts/set-default-browser.sh) with `dia`.
+11. On this machine Dia is already the default browser. On another machine, install Dia first, then run [set-default-browser.sh](../_legacy/set-default-browser.sh) with `dia`.
 12. Remove bundled Apple apps you do not want.
 
 ## Known Gaps

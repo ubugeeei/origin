@@ -32,9 +32,11 @@ These are exposed directly into `/Applications` after `darwin-rebuild switch`.
 - GitLab CLI
 - Docker CLI
 - Colima
+- Bun
 - MoonBit
 - mise
-- Nushell
+- just
+- ush
 - tmux
 - Vite+ (`vp`)
 - starship

@@ -1,0 +1,75 @@
+use std::env::get_or
+use std::path::{from_source, prepend_env}
+use std::command::{capture, exists as command_exists}
+
+fn unset_if_empty(value: String) -> String {
+  if value == "" {
+    "<unset>"
+  }
+  else {
+    value
+  }
+}
+
+fn resolved_command_path(name: String) -> String {
+  if command_exists(name) {
+    capture("command -v " + name)
+  }
+  else if name == "node" {
+    if command_exists("vp") {
+      capture("vp env which node | awk '/^\\// { print; exit }' || true")
+    }
+    else {
+      ""
+    }
+  }
+  else {
+    ""
+  }
+}
+
+let home = get_or("HOME", "")
+let repo_root = from_source("..").resolve()
+
+let candidate_paths = [home.join(".vite-plus").join("bin"), home.join(".local").join("bin"), home.join(".moon").join("bin"), home.join(".local").join("share").join("mise").join("shims"), home.join(".cargo").join("bin"), home.join("go").join("bin"), home.join(".bun").join("bin"), home.join("Library").join("pnpm"), home.join(".local").join("state").join("nix").join("profiles").join("home-manager").join("home-path").join("bin"), repo_root.join("result").join("sw").join("bin")]
+
+for entry in candidate_paths {
+  if entry.exists() {
+    prepend_env("PATH", entry)
+  }
+  else {
+    ()
+  }
+}
+
+let login_shell = unset_if_empty(capture("/usr/bin/dscl . -read /Users/$(id -un) UserShell 2>/dev/null | awk 'NR == 1 { print $2 }' || true"))
+let launchd_shell = unset_if_empty(capture("/bin/launchctl getenv SHELL 2>/dev/null || true"))
+let launchd_path = unset_if_empty(capture("/bin/launchctl getenv PATH 2>/dev/null || true"))
+
+print "info login shell -> " + login_shell
+print "info launchd SHELL -> " + launchd_shell
+print "info launchd PATH -> " + launchd_path
+
+let commands = ["nix", "darwin-rebuild", "git", "gh", "glab", "gam", "zed", "ghostty", "ush", "tmux", "codex", "aws", "mise", "vp", "node", "moon", "moonfmt", "moonc", "moonbit-lsp", "cargo", "cargo-clippy", "clippy-driver", "rustc", "rustfmt", "rust-analyzer", "go", "gopls", "gofumpt", "goimports", "golangci-lint", "dlv", "fastfetch", "atuin", "carapace"]
+
+for cmd in commands {
+  let path = resolved_command_path(cmd)
+  if path == "" {
+    print "miss " + cmd
+  }
+  else {
+    print "ok   " + cmd + " -> " + path
+  }
+}
+
+let optional_commands = ["pnpm", "bun"]
+
+for cmd in optional_commands {
+  let path = resolved_command_path(cmd)
+  if path == "" {
+    print "skip " + cmd + " -> optional"
+  }
+  else {
+    print "ok   " + cmd + " -> " + path
+  }
+}

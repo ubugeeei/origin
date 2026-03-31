@@ -1,0 +1,51 @@
+use std::command::exists as command_exists
+use std::env::get_or
+use std::path::prepend_env
+use std::string::replace
+
+fn shell_quote(value: String) -> String {
+  "'" + replace(value, "'", "'\"'\"'") + "'"
+}
+
+fn ensure_defaultbrowser() -> unknown!() {
+  if command_exists("defaultbrowser") {
+    ()
+  }
+  else {
+    shell "printf '%s\n' 'defaultbrowser is not installed' >&2; exit 1"?
+  }
+}
+
+fn main() -> unknown!() {
+  let browser = get_or("SET_DEFAULT_BROWSER_TARGET", "")
+
+  if browser == "" {
+    shell "printf '%s\n' 'SET_DEFAULT_BROWSER_TARGET is required' >&2; exit 1"?
+  }
+  else {
+    ()
+  }
+
+  let home = get_or("HOME", "")
+  let local_bin = home.join(".local").join("bin")
+  let home_manager_bin = home.join(".local").join("state").join("nix").join("profiles").join("home-manager").join("home-path").join("bin")
+
+  if local_bin.exists() {
+    prepend_env("PATH", local_bin)
+  }
+  else {
+    ()
+  }
+
+  if home_manager_bin.exists() {
+    prepend_env("PATH", home_manager_bin)
+  }
+  else {
+    ()
+  }
+
+  ensure_defaultbrowser()?
+  shell ("defaultbrowser " + shell_quote(browser))?
+}
+
+main()?

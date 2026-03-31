@@ -89,7 +89,7 @@ Notes:
 Refresh the tracked GitHub profile icon asset:
 
 ```bash
-./scripts/fetch-github-profile-icon.sh <github-username>
+./_legacy/fetch-github-profile-icon.sh <github-username>
 ```
 
 ## GitLab

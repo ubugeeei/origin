@@ -48,7 +48,8 @@ git clone git@gitlab.com:<group>/<repo>.git "$HOME/Source/gitlab.com/<group>/<re
 
 - primary editor: Zed
 - secondary editor: Neovim
-- shell: Nushell is the default login shell, with zsh still available
+- shell: `ush` is the default login shell, with zsh still available
+- `scripts/` is source-only and now holds the `.ush` implementation for every repo command, while `_legacy/*.sh` keeps shell entrypoints and compatibility wrappers; bootstrap-oriented entrypoints stay POSIX `sh`, and operational helpers such as `apply`, `clone`, `doctor`, `init-repo`, `remove-unused-apple-apps`, `set-default-browser`, and `fetch-github-profile-icon` run through `ush`
 - prompt: starship
 - runtime manager: Vite+ (`vp env`)
 - secondary runtime manager: mise (installed, but not auto-activated)
@@ -69,8 +70,8 @@ docker version
 - Use `vp env pin lts` or `vp env pin 22` inside a project to create `.node-version`.
 - Use `vp env install` to download the pinned or default Node.js runtime.
 - Use `vp install`, `vp dev`, `vp check`, `vp test`, and `vp build` in JS projects instead of managing `pnpm` or `node` from Nix.
-- Nushell is the default shell here. For project pins, use `.node-version` or `vp env exec ...`.
+- `ush` is the default shell here. For project pins, use `.node-version` or `vp env exec ...`.
 - If you want session-local `vp env use <version>` behavior, open a zsh session for that workflow.
-- Standard user-managed toolchain bins such as `~/.cargo/bin`, `~/go/bin`, `~/.bun/bin`, and `~/Library/pnpm` are also on PATH when those directories exist.
+- Standard user-managed toolchain bins such as `~/.moon/bin`, `~/.cargo/bin`, `~/go/bin`, `~/.bun/bin`, and `~/Library/pnpm` are also on PATH when those directories exist.
 - `mise` is available too, and `~/.local/share/mise/shims` is kept on PATH for shell and GUI sessions.
 - Auto-activation is intentionally off so `vp env` remains the default Node.js flow. If you want `mise activate` behavior in a shell, opt into it manually for that shell session.

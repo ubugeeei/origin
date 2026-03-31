@@ -4,15 +4,306 @@ let
   shellEnv = mkShellEnvironment {
     inherit homeDir username;
   };
-  nushellConfigDir = "${homeDir}/.config/nushell";
-  macosNushellConfigDir = "${homeDir}/Library/Application Support/nushell";
   workspaceRoot = shellEnv.workspaceRoot;
   legacyWorkspaceRoot = "${homeDir}/Code";
-  cloneScript = pkgs.writeText "clone.nu" (builtins.readFile ../scripts/clone.sh);
+  cloneScriptText = ''
+    #!${pkgs.bash}/bin/bash
+    set -euo pipefail
+
+    usage_text='usage:
+      clone github <owner>/<repo> [alias]
+      clone gitlab <group>/<repo> [alias]
+      clone github.com/<owner>/<repo> [alias]
+      clone git@github.com:<owner>/<repo>.git [alias]
+
+    options:
+      -a, --alias <name>  clone into <repo>--<name>
+      -h, --help          show this help
+
+    notes:
+      - only GitHub and GitLab are supported
+      - only SSH remotes are accepted
+      - repositories are cloned under $GHQ_ROOT or $HOME/Source'
+
+    fail() {
+      local message=$1
+      local code=''${2:-64}
+      printf 'clone: %s\n' "$message" >&2
+      exit "$code"
+    }
+
+    print_usage() {
+      printf '%s\n' "$usage_text" >&2
+    }
+
+    maybe_normalize_host() {
+      case "$1" in
+        github | github.com)
+          printf 'github.com\n'
+          ;;
+        gitlab | gitlab.com)
+          printf 'gitlab.com\n'
+          ;;
+        *)
+          return 1
+          ;;
+      esac
+    }
+
+    parse_ssh_url() {
+      local spec=$1
+
+      if [[ $spec =~ ^git@(github\.com|gitlab\.com):(.+)$ ]]; then
+        printf '%s\t%s\n' "''${BASH_REMATCH[1]}" "''${BASH_REMATCH[2]}"
+        return 0
+      fi
+
+      return 1
+    }
+
+    parse_spec() {
+      local spec=$1
+      local host_part
+      local slug_part
+      local normalized_host
+
+      if parse_ssh_url "$spec"; then
+        return 0
+      fi
+
+      case "$spec" in
+        http://* | https://*)
+          fail "only SSH remotes are supported"
+          ;;
+      esac
+
+      [[ $spec == */* ]] || return 1
+
+      host_part=''${spec%%/*}
+      slug_part=''${spec#*/}
+      normalized_host=$(maybe_normalize_host "$host_part" || true)
+
+      if [[ -z $normalized_host ]]; then
+        fail "unsupported host: $host_part"
+      fi
+
+      printf '%s\t%s\n' "$normalized_host" "$slug_part"
+    }
+
+    validate_slug() {
+      local cleaned=$1
+      local part
+
+      cleaned=''${cleaned#/}
+      cleaned=''${cleaned%/}
+      cleaned=''${cleaned%.git}
+
+      if [[ -z $cleaned ]]; then
+        fail "repository path is required"
+      fi
+
+      if [[ $cleaned != */* ]]; then
+        fail "repository path must look like <owner>/<repo>"
+      fi
+
+      IFS='/' read -r -a parts <<<"$cleaned"
+      for part in "''${parts[@]}"; do
+        if [[ -z $part ]]; then
+          fail "repository path contains an empty segment"
+        fi
+
+        if [[ $part == "." || $part == ".." ]]; then
+          fail "repository path contains an invalid segment: $part"
+        fi
+      done
+
+      printf '%s\n' "$cleaned"
+    }
+
+    validate_alias() {
+      local alias_name=$1
+
+      if [[ -z $alias_name ]]; then
+        fail "alias must not be empty"
+      fi
+
+      if [[ $alias_name == */* ]]; then
+        fail "alias must not contain '/'"
+      fi
+
+      if [[ $alias_name == "." || $alias_name == ".." ]]; then
+        fail "alias must not be '.' or '..'"
+      fi
+    }
+
+    command_path() {
+      type -P -- "$1" 2>/dev/null || true
+    }
+
+    parse_host_and_slug() {
+      local pair=$1
+      IFS=$'\t' read -r PARSED_HOST PARSED_SLUG <<<"$pair"
+    }
+
+    main() {
+      local alias_name=""
+      local host=""
+      local slug=""
+      local first
+      local second
+      local normalized_host
+      local parsed
+      local root
+      local repo_name
+      local namespace
+      local local_name
+      local target
+      local remote
+      local git
+      local -a args=()
+
+      while [[ $# -gt 0 ]]; do
+        case "$1" in
+          -a | --alias)
+            [[ $# -ge 2 ]] || fail "missing value for $1"
+            [[ -z $alias_name ]] || fail "alias specified twice"
+            alias_name=$2
+            shift 2
+            ;;
+          -h | --help)
+            print_usage
+            exit 0
+            ;;
+          --)
+            shift
+            while [[ $# -gt 0 ]]; do
+              args+=("$1")
+              shift
+            done
+            ;;
+          -*)
+            fail "unknown option: $1"
+            ;;
+          *)
+            args+=("$1")
+            shift
+            ;;
+        esac
+      done
+
+      case ''${#args[@]} in
+        1)
+          parsed=$(parse_spec "''${args[0]}" || true)
+          if [[ -z $parsed ]]; then
+            print_usage
+            fail "missing host or repository path"
+          fi
+          parse_host_and_slug "$parsed"
+          host=$PARSED_HOST
+          slug=$PARSED_SLUG
+          ;;
+        2)
+          first=''${args[0]}
+          second=''${args[1]}
+          normalized_host=$(maybe_normalize_host "$first" || true)
+
+          if [[ -n $normalized_host ]]; then
+            host=$normalized_host
+            slug=$second
+          else
+            [[ -z $alias_name ]] || fail "alias specified twice"
+            parsed=$(parse_spec "$first" || true)
+            if [[ -z $parsed ]]; then
+              print_usage
+              fail "missing host or repository path"
+            fi
+            parse_host_and_slug "$parsed"
+            host=$PARSED_HOST
+            slug=$PARSED_SLUG
+            alias_name=$second
+          fi
+          ;;
+        3)
+          normalized_host=$(maybe_normalize_host "''${args[0]}" || true)
+          [[ -n $normalized_host ]] || fail "unsupported host: ''${args[0]}"
+          [[ -z $alias_name ]] || fail "alias specified twice"
+          host=$normalized_host
+          slug=''${args[1]}
+          alias_name=''${args[2]}
+          ;;
+        *)
+          print_usage
+          fail "unexpected arguments"
+          ;;
+      esac
+
+      slug=$(validate_slug "$slug")
+
+      if [[ -n $alias_name ]]; then
+        validate_alias "$alias_name"
+      fi
+
+      repo_name=''${slug##*/}
+      namespace=''${slug%/*}
+      local_name=$repo_name
+      if [[ -n $alias_name ]]; then
+        local_name="''${repo_name}--''${alias_name}"
+      fi
+
+      root=''${GHQ_ROOT:-"$HOME/Source"}
+      target="''${root}/''${host}/''${namespace}/''${local_name}"
+      remote="git@''${host}:''${slug}.git"
+
+      if [[ $host != "github.com" && $host != "gitlab.com" ]]; then
+        fail "only github.com and gitlab.com are supported"
+      fi
+
+      [[ ! -e $target ]] || fail "target already exists: $target"
+
+      git=$(command_path git)
+      [[ -n $git ]] || fail "git is not installed"
+
+      mkdir -p "$(dirname "$target")"
+
+      printf 'cloning %s\n' "$remote"
+      printf '  -> %s\n' "$target"
+
+      exec "$git" clone "$remote" "$target"
+    }
+
+    main "$@"
+  '';
   raycastLauncher = "${homeDir}/.local/bin/launch-raycast";
   raycastWindowCommandLauncher = "${homeDir}/.local/bin/launch-raycast-window-command";
   hhkbVendorId = 1278;
   hhkbProductId = 33;
+  commonShellAliases = {
+    c = "clear";
+    cat = "bat";
+    df = "duf";
+    du = "dust";
+    g = "git";
+    ga = "git add";
+    gaa = "git add --all";
+    gam = "git commit --amend";
+    gb = "git branch";
+    gbda = "git gbda";
+    gco = "git checkout";
+    gd = "git diff";
+    gf = "git fetch";
+    gl = "git pull";
+    gm = "git commit -m";
+    gp = "git push";
+    gs = "git status -sb";
+    gsw = "git switch";
+    l = "eza -lah --git";
+    lg = "eza -lah --git";
+    ll = "eza -lah --git";
+    lt = "eza --tree --level=2";
+    t = "tmux attach -t main || tmux new -s main";
+    v = "nvim";
+    ze = "zed";
+  };
   mkKarabinerShellCommandRule =
     {
       description,
@@ -149,6 +440,7 @@ in
 
   home.packages = with pkgs; [
     awscli2
+    bun
     codex
     colima
     defaultbrowser
@@ -159,6 +451,7 @@ in
     gmail-open
     glab
     jq
+    just
     lazydocker
     fastfetch
     ripgrep
@@ -193,31 +486,7 @@ in
 
   home.sessionVariables = shellEnv.sessionVariables;
 
-  home.shellAliases = {
-    c = "clear";
-    cat = "bat";
-    df = "duf";
-    du = "dust";
-    g = "git";
-    ga = "git add";
-    gaa = "git add --all";
-    gam = "git commit --amend";
-    gb = "git branch";
-    gbda = "git gbda";
-    gco = "git checkout";
-    gd = "git diff";
-    gf = "git fetch";
-    gl = "git pull";
-    gm = "git commit -m";
-    gp = "git push";
-    gs = "git status -sb";
-    gsw = "git switch";
-    l = "eza -lah --git";
-    lg = "eza -lah --git";
-    lt = "eza --tree --level=2";
-    v = "nvim";
-    ze = "zed";
-  };
+  home.shellAliases = commonShellAliases;
 
   home.activation.createWorkspaceLayout = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     mkdir -p "${workspaceRoot}"
@@ -248,6 +517,7 @@ in
     mkdir -p "$HOME/go/bin"
     mkdir -p "$HOME/go/pkg"
     mkdir -p "$HOME/go/src"
+    mkdir -p "$HOME/.moon/bin"
   '';
 
   home.activation.setupVitePlus = lib.hm.dag.entryAfter [ "createLanguageToolDirs" ] ''
@@ -297,24 +567,6 @@ in
     /usr/bin/killall cfprefsd >/dev/null 2>&1 || true
   '';
 
-  home.activation.migrateMacOsNushellConfig = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
-    target_dir="${macosNushellConfigDir}"
-    mkdir -p "$target_dir"
-
-    for name in config.nu env.nu; do
-      path="$target_dir/$name"
-      backup="$path.pre-home-manager"
-
-      if [ -e "$path" ] && [ ! -L "$path" ]; then
-        if [ -e "$backup" ] || [ -L "$backup" ]; then
-          rm -f "$path"
-        else
-          mv "$path" "$backup"
-        fi
-      fi
-    done
-  '';
-
   xdg.enable = true;
 
   xdg.configFile."ghq/config.yml".text = ''
@@ -330,6 +582,15 @@ in
 
   xdg.configFile."docker/config.json".text = builtins.toJSON {
     detachKeys = "ctrl-e,e";
+  };
+
+  xdg.configFile."ush/config.json".text = builtins.toJSON {
+    shell = {
+      historySize = 1000000;
+      interaction = true;
+      stylishDefault = false;
+    };
+    aliases = commonShellAliases;
   };
 
   xdg.configFile."ghostty/config".text = ''
@@ -359,6 +620,22 @@ in
   '';
 
   home.file.".config/workstation/shell/terminal-env.sh".text = ''
+    prepend_path() {
+      case ":''${PATH:-}:" in
+        *":$1:"*) ;;
+        *)
+          if [ -n "''${PATH:-}" ]; then
+            PATH="$1:$PATH"
+          else
+            PATH="$1"
+          fi
+          export PATH
+          ;;
+      esac
+    }
+
+    ${builtins.concatStringsSep "\n" (map (path: "prepend_path \"${path}\"") (lib.reverseList shellEnv.managedPathEntries))}
+
     # Some embedded terminals start shells without TERM. Fall back so terminfo
     # consumers like clear, tput, fzf, and tmux can still work.
     if [ -z "''${TERM:-}" ]; then
@@ -381,12 +658,6 @@ in
       exec ${pkgs.zed-editor}/bin/zeditor "$@"
     '';
   };
-
-  home.file."Library/Application Support/nushell/config.nu".source =
-    config.lib.file.mkOutOfStoreSymlink "${nushellConfigDir}/config.nu";
-
-  home.file."Library/Application Support/nushell/env.nu".source =
-    config.lib.file.mkOutOfStoreSymlink "${nushellConfigDir}/env.nu";
 
   home.file.".local/bin/ghostty" = {
     executable = true;
@@ -425,10 +696,7 @@ in
 
   home.file.".local/bin/clone" = {
     executable = true;
-    text = ''
-      #!${pkgs.bash}/bin/bash
-      exec ${pkgs.nushell}/bin/nu "${cloneScript}" "$@"
-    '';
+    text = cloneScriptText;
   };
 
   home.file.".zprofile".text = ''

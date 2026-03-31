@@ -18,7 +18,8 @@ As of March 13, 2026, the official Dia site appears to expose waitlist / invite 
 
 This machine already has `Dia.app` installed and `dia` is already set as the default browser. What remains manual is making that installation reproducible from this repository.
 
-Once Dia publishes a stable macOS download URL, add a custom package similar to `pkgs/azookey-mac.nix` or `pkgs/microsoft-edge-mac.nix`, then keep using [set-default-browser.sh](../scripts/set-default-browser.sh) to enforce the browser default.
+Once Dia publishes a stable macOS download URL, add a custom package similar to `pkgs/azookey-mac.nix` or `pkgs/microsoft-edge-mac.nix`, then keep using [set-default-browser.sh](../_legacy/set-default-browser.sh) to enforce the browser default.
+That wrapper delegates to `ush` through `_legacy/run-ush.sh` and can fall back to `nix run .#ush`, so it does not have to wait for the login shell switch.
 
 ## Vite+ Runtime Notes
 
@@ -26,8 +27,8 @@ Once Dia publishes a stable macOS download URL, add a custom package similar to 
 
 - `vp env setup` and `vp env on` are applied automatically during Home Manager activation.
 - `vp env install` still downloads the actual Node.js runtime lazily the first time you need it.
-- Nushell is the default login shell in this setup and uses the shared `vp` shims fine for project pins.
-- Session-local `vp env use <version>` eval is still the better fit for zsh, so use `vp env exec ...` from Nushell when you need a one-off override.
+- `ush` is the default login shell in this setup and uses the shared `vp` shims fine for project pins.
+- Session-local `vp env use <version>` eval is still the better fit for zsh, so use `vp env exec ...` from `ush` when you need a one-off override.
 
 ## azooKey Enablement
 

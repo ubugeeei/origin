@@ -1,0 +1,92 @@
+use std::env::get_or
+use std::fs::{remove, tmpfile, write_text}
+use std::path::from_source
+use std::string::replace
+
+fn shell_quote(value: String) -> String {
+  "'" + replace(value, "'", "'\"'\"'") + "'"
+}
+
+fn write_shell_script(script: String) -> String {
+  let temp_script = tmpfile()
+  write_text(temp_script, script)
+  temp_script
+}
+
+fn main() -> unknown!() {
+  let repo_root = from_source("..").resolve()
+  let force_value = get_or("INIT_MACHINE_CONFIG_FORCE", "0")
+
+  let script = """
+    set -eu
+
+    TARGET="$ROOT/machine/local.env"
+
+    if [ -f "$TARGET" ] && [ "$ORIGIN_FORCE" -ne 1 ]; then
+      echo "$TARGET already exists. Re-run with --force to overwrite it." >&2
+      exit 1
+    fi
+
+    quote_sh() {
+      printf "'%s'" "$(printf "%s" "$1" | sed "s/'/'\\\\''/g")"
+    }
+
+    primary_user=$(id -un)
+    primary_home=$(dscl . -read "/Users/$primary_user" NFSHomeDirectory | awk '{print $2}')
+    arch=$(uname -m)
+
+    case "$arch" in
+      arm64)
+        origin_system="aarch64-darwin"
+        ;;
+      x86_64)
+        origin_system="x86_64-darwin"
+        ;;
+      *)
+        echo "unsupported architecture: $arch" >&2
+        exit 1
+        ;;
+    esac
+
+    origin_workspace_root="${primary_home}/Source"
+    origin_computer_name=$(scutil --get ComputerName 2>/dev/null || printf '%s\n' "$primary_user Mac")
+    origin_local_host_name=$(scutil --get LocalHostName 2>/dev/null || printf '%s\n' "$primary_user")
+    origin_host_name=$(scutil --get HostName 2>/dev/null || printf '%s\n' "$origin_local_host_name")
+    origin_git_user_name=$(git config --global user.name 2>/dev/null || true)
+    origin_git_user_email=$(git config --global user.email 2>/dev/null || true)
+    origin_github_user=$(git config --global github.user 2>/dev/null || true)
+
+    mkdir -p "$ROOT/machine"
+
+    cat > "$TARGET" <<EOF
+    # Machine-specific overrides for this repository.
+    # This file is intentionally gitignored.
+
+    ORIGIN_SYSTEM=$(quote_sh "$origin_system")
+    ORIGIN_USERNAME=$(quote_sh "$primary_user")
+    ORIGIN_HOME=$(quote_sh "$primary_home")
+    ORIGIN_WORKSPACE_ROOT=$(quote_sh "$origin_workspace_root")
+
+    ORIGIN_COMPUTER_NAME=$(quote_sh "$origin_computer_name")
+    ORIGIN_HOSTNAME=$(quote_sh "$origin_host_name")
+    ORIGIN_LOCAL_HOSTNAME=$(quote_sh "$origin_local_host_name")
+
+    ORIGIN_GIT_USER_NAME=$(quote_sh "$origin_git_user_name")
+    ORIGIN_GIT_USER_EMAIL=$(quote_sh "$origin_git_user_email")
+    ORIGIN_GITHUB_USER=$(quote_sh "$origin_github_user")
+
+    # Optional bundle identifier namespace for generated Chrome app wrappers.
+    # ORIGIN_APP_NAMESPACE='dev.origin'
+    EOF
+
+    echo "Wrote $TARGET"
+    echo "Edit it if you want to pin values that differ from this machine."
+  """
+
+  let env_prefix = "ROOT=" + shell_quote(repo_root) + " ORIGIN_FORCE=" + shell_quote(force_value)
+  let temp_script = write_shell_script(script)
+  shell (env_prefix + " sh " + shell_quote(temp_script))?
+  remove(temp_script)
+}
+
+main()?

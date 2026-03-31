@@ -2,6 +2,8 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+script_name=$(basename "$0")
+script_name=${script_name%.sh}
 mode=tsv
 allowed_key_pattern='ORIGIN_(SYSTEM|USERNAME|HOME|WORKSPACE_ROOT|COMPUTER_NAME|HOSTNAME|LOCAL_HOSTNAME|GIT_USER_NAME|GIT_USER_EMAIL|GITHUB_USER|APP_NAMESPACE|TOUCH_ID_SUDO_AUTH)'
 
@@ -11,7 +13,7 @@ if [ "${1-}" = "--export" ]; then
 fi
 
 if [ "$#" -ne 0 ]; then
-  echo "usage: $0 [--export]" >&2
+  echo "usage: $script_name [--export]" >&2
   exit 64
 fi
 

@@ -12,7 +12,7 @@ in
 
   users.users.${username} = {
     home = machine.homeDirectory;
-    shell = pkgs.nushell;
+    shell = pkgs.ush;
   };
 
   system.primaryUser = username;
@@ -21,7 +21,7 @@ in
 
   environment.shells = with pkgs; [
     bashInteractive
-    nushell
+    ush
     zsh
   ];
 

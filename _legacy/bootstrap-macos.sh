@@ -23,41 +23,35 @@ load_machine_env() {
         ;;
     esac
   done <<EOF
-$("$ROOT/scripts/print-machine-env.sh")
+$("$ROOT/_legacy/print-machine-env.sh")
 EOF
 }
 
-if [ ! -f "$ROOT/machine/local.env" ]; then
-  echo "info machine/local.env not found; using values derived from the current Mac."
-  echo "info run ./scripts/init-machine-config.sh if you want to pin them."
-fi
-
-load_machine_env
-
-if command -v darwin-rebuild >/dev/null 2>&1; then
-  sudo /usr/bin/env \
-    HOME="$primary_home" \
-    NIX_CONFIG="experimental-features = nix-command flakes" \
-    ORIGIN_SYSTEM="$ORIGIN_SYSTEM" \
-    ORIGIN_USERNAME="$ORIGIN_USERNAME" \
-    ORIGIN_HOME="$ORIGIN_HOME" \
-    ORIGIN_WORKSPACE_ROOT="$ORIGIN_WORKSPACE_ROOT" \
-    ORIGIN_COMPUTER_NAME="$ORIGIN_COMPUTER_NAME" \
-    ORIGIN_HOSTNAME="$ORIGIN_HOSTNAME" \
-    ORIGIN_LOCAL_HOSTNAME="$ORIGIN_LOCAL_HOSTNAME" \
-    ORIGIN_GIT_USER_NAME="$ORIGIN_GIT_USER_NAME" \
-    ORIGIN_GIT_USER_EMAIL="$ORIGIN_GIT_USER_EMAIL" \
-    ORIGIN_GITHUB_USER="$ORIGIN_GITHUB_USER" \
-    ORIGIN_APP_NAMESPACE="$ORIGIN_APP_NAMESPACE" \
-    ORIGIN_TOUCH_ID_SUDO_AUTH="$ORIGIN_TOUCH_ID_SUDO_AUTH" \
-    "$(command -v darwin-rebuild)" switch --flake "$flake_ref" --impure
-  exit 0
+if ! xcode-select -p >/dev/null 2>&1; then
+  echo "Installing Command Line Tools..."
+  xcode-select --install || true
+  echo "Finish the macOS installer dialog, then rerun this script."
+  exit 1
 fi
 
 if [ ! -x "$nix_bin" ]; then
-  echo "nix is not installed" >&2
+  echo "Installing Nix..."
+  curl -fsSL https://install.determinate.systems/nix | sh -s -- install
+fi
+
+if [ ! -x "$nix_bin" ]; then
+  echo "nix was not found after installation" >&2
   exit 1
 fi
+
+cd "$ROOT"
+
+if [ ! -f "$ROOT/machine/local.env" ]; then
+  echo "machine/local.env not found; using values derived from the current Mac."
+  echo "Run ./_legacy/init-machine-config.sh if you want to pin them."
+fi
+
+load_machine_env
 
 sudo /usr/bin/env \
   HOME="$primary_home" \

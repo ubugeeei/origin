@@ -7,5 +7,5 @@ GitHub avatars are stored under `assets/profile-icons/github/<username>/avatar.j
 Refresh one with:
 
 ```bash
-./scripts/fetch-github-profile-icon.sh <username>
+./_legacy/fetch-github-profile-icon.sh <username>
 ```

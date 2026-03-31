@@ -7,6 +7,8 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    ush.url = "github:ubugeeei/ush";
+    ush.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, ... }:
@@ -27,12 +29,15 @@
           goBin = "${goPath}/bin";
           bunInstall = "${homeDir}/.bun";
           bunBin = "${bunInstall}/bin";
+          moonHome = "${homeDir}/.moon";
+          moonBin = "${moonHome}/bin";
           miseShims = "${homeDir}/.local/share/mise/shims";
           pnpmHome = "${homeDir}/Library/pnpm";
           vitePlusHome = "${homeDir}/.vite-plus";
           managedPathEntries = [
             "${vitePlusHome}/bin"
             "${homeDir}/.local/bin"
+            moonBin
             miseShims
             "${cargoHome}/bin"
             goBin
@@ -57,6 +62,7 @@
             GHQ_ROOT = workspaceRoot;
             GOBIN = goBin;
             GOPATH = goPath;
+            MOON_HOME = moonHome;
             PNPM_HOME = pnpmHome;
             STARSHIP_CONFIG = "${homeDir}/.config/starship.toml";
             VISUAL = "zed";
@@ -66,11 +72,7 @@
             XDG_DATA_HOME = "${homeDir}/.local/share";
             XDG_STATE_HOME = "${homeDir}/.local/state";
           };
-          sessionVariableNames = builtins.attrNames sessionVariables;
-          nuEnvAssignments = builtins.concatStringsSep "\n" (
-            map (name: "$env.${name} = \"${sessionVariables.${name}}\"") sessionVariableNames
-          );
-          loginShell = "/run/current-system/sw/bin/nu";
+          loginShell = "/run/current-system/sw/bin/ush";
         in
         {
           inherit loginShell managedPathEntries sessionVariables workspaceRoot;
@@ -79,21 +81,6 @@
             PATH = builtins.concatStringsSep ":" managedPathEntries;
             SHELL = loginShell;
           };
-
-          nuExtraEnv = ''
-            let managed_path_entries = ('${builtins.toJSON managedPathEntries}' | from json)
-            let current_path = ($env.PATH? | default [])
-
-            $env.PATH = (
-              $managed_path_entries
-              | append (
-                  $current_path
-                  | where {|entry| not ($managed_path_entries | any {|candidate| $candidate == $entry }) }
-                )
-            )
-
-            ${nuEnvAssignments}
-          '';
         };
       homeConfigurationName = "${username}@${machine.networking.localHostName}";
       overlays = [
@@ -102,6 +89,9 @@
           chrome-webapp-bundle = prev.callPackage ./pkgs/chrome-webapp-bundle.nix { };
           moonbit = prev.callPackage ./pkgs/moonbit.nix { };
           nova-font = prev.callPackage ./pkgs/nova-font.nix { };
+          ush = inputs.ush.packages.${system}.default.overrideAttrs (_: {
+            doCheck = false;
+          });
           vite-plus = prev.callPackage ./pkgs/vite-plus.nix { };
           gmail-app = final.chrome-webapp-bundle {
             appName = "Gmail";
@@ -144,6 +134,7 @@
     {
       packages.${system} = {
         inherit (pkgs) moonbit;
+        inherit (pkgs) ush;
       };
 
       homeConfigurations.${homeConfigurationName} = home-manager.lib.homeManagerConfiguration {

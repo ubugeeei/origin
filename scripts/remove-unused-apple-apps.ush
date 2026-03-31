@@ -1,0 +1,49 @@
+fn main() -> unknown!() {
+  let removable_apps = ["/Applications/GarageBand.app", "/Applications/iMovie.app", "/Applications/Keynote.app", "/Applications/Numbers.app", "/Applications/Pages.app"]
+
+  let protected_apps = ["/System/Applications/Books.app", "/System/Applications/Chess.app", "/System/Applications/FaceTime.app", "/System/Applications/Games.app", "/System/Applications/Journal.app", "/System/Applications/Music.app"]
+
+  let removable_count = 0
+
+  print "Removable Apple apps not used in this workstation setup:"
+  for app in removable_apps {
+    if app.exists() {
+      let removable_count = removable_count + 1
+      print "  - " + app
+    }
+    else {
+      ()
+    }
+  }
+
+  print ""
+  print "SIP-protected Apple apps requested for removal but not removable while SIP is enabled:"
+  for app in protected_apps {
+    if app.exists() {
+      print "  - " + app
+    }
+    else {
+      ()
+    }
+  }
+
+  if removable_count == 0 {
+    print ""
+    print "No removable apps were found."
+  }
+  else {
+    print ""
+    print "Removing only the removable apps in /Applications..."
+    for app in removable_apps {
+      if app.exists() {
+        shell ("sudo rm -rf " + app)?
+      }
+      else {
+        ()
+      }
+    }
+    print "Done."
+  }
+}
+
+main()?
