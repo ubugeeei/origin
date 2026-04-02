@@ -28,6 +28,7 @@ if command -v ush >/dev/null 2>&1; then
 fi
 
 if command -v nix >/dev/null 2>&1; then
+  "$repo_root/tnix/sync.sh"
   exec nix run .#ush -- "$target" "$@"
 fi
 

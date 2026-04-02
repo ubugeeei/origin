@@ -11,6 +11,15 @@
 The current flake intentionally leaves a few macOS-specific items outside the activation path until we have a reliable package source:
 
 - `Dia` installation source
+- `Vide` installation, because it is not open-source and is not packaged by this repo
+
+## Editor Notes
+
+`Vide` is the IDE developed by ubugeeei and is the editor used day to day, but it is not open-source, so it stays outside this repository-managed setup.
+
+`Zed` is the next editor in regular use.
+
+`VS Code` and `Neovim` are installed mainly for verification work around editor integrations and LSP behavior for tools developed by ubugeeei rather than as daily editors.
 
 ## Dia Browser
 
@@ -20,6 +29,7 @@ This machine already has `Dia.app` installed and `dia` is already set as the def
 
 Once Dia publishes a stable macOS download URL, add a custom package similar to `pkgs/azookey-mac.nix` or `pkgs/microsoft-edge-mac.nix`, then keep using [set-default-browser.sh](../_legacy/set-default-browser.sh) to enforce the browser default.
 That wrapper delegates to `ush` through `_legacy/run-ush.sh` and can fall back to `nix run .#ush`, so it does not have to wait for the login shell switch.
+If the repo has fresh `.tnix` changes, run `./tnix/sync.sh` before the wrapper so the generated runtime `.nix` files are up to date.
 
 ## Vite+ Runtime Notes
 
@@ -27,7 +37,7 @@ That wrapper delegates to `ush` through `_legacy/run-ush.sh` and can fall back t
 
 - `vp env setup` and `vp env on` are applied automatically during Home Manager activation.
 - `vp env install` still downloads the actual Node.js runtime lazily the first time you need it.
-- `ush` is the default login shell in this setup and uses the shared `vp` shims fine for project pins.
+- `ush` means "ubugeeei sh", the modern `sh` developed by ubugeeei. It is the default login shell in this setup and uses the shared `vp` shims fine for project pins.
 - Session-local `vp env use <version>` eval is still the better fit for zsh, so use `vp env exec ...` from `ush` when you need a one-off override.
 
 ## azooKey Enablement

@@ -3,22 +3,22 @@ let
   flake = import ../flake.nix;
 
   machine :: DotfilesMachine;
-  machine = import ../machine/default.nix;
+  machine = import ./src/machine/default.tnix;
 
   homeModule :: DotfilesHomeModule;
   homeModule = import ../home/default.nix;
 
   shellModule :: DotfilesShellModule;
-  shellModule = import ../home/shell.nix;
+  shellModule = import ./src/home/shell.tnix;
 
   editorModule :: DotfilesEditorModule;
-  editorModule = import ../home/editor.nix;
+  editorModule = import ./src/home/editor.tnix;
 
   gitModule :: DotfilesGitModule;
-  gitModule = import ../home/git.nix;
+  gitModule = import ./src/home/git.tnix;
 
   devtoolsModule :: DotfilesDevtoolsModule;
-  devtoolsModule = import ../home/devtools.nix;
+  devtoolsModule = import ./src/home/devtools.tnix;
 
   darwinCoreModule :: DotfilesDarwinModule;
   darwinCoreModule = import ../modules/darwin/core.nix;

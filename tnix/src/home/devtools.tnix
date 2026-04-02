@@ -1,0 +1,31 @@
+let
+  module :: DotfilesDevtoolsModule;
+  module = (_args :: DotfilesDevtoolsModuleArgs): {
+    programs = {
+      bat = {
+        enable = true;
+      };
+      eza = {
+        enable = true;
+      };
+    };
+
+    home = {
+      file = builtins.listToAttrs [
+        {
+          name = ".config/nvim/README.md";
+          value = {
+            text = "Neovim is intentionally the lightweight secondary editor in this setup.\n";
+          };
+        }
+        {
+          name = ".config/workstation/manual-apps.md";
+          value = {
+            text = "Manual follow-up items:\n\n- Dia: this machine already has the app and sets it as the default browser, but the install source is still outside the flake.\n- azooKey: packaged already, but the macOS input source still needs a logout/login plus enablement in Keyboard settings.\n- Karabiner-Elements: open it once and approve macOS permissions so the HHKB profile and launcher hotkeys can work.\n- Fonts: drop additional Nova variants into assets/fonts if you want them packaged on the next apply.\n";
+          };
+        }
+      ];
+    };
+  };
+in
+module

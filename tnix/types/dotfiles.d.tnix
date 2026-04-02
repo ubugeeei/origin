@@ -1,4 +1,4 @@
-# Repo-specific ambient typing for the existing Nix entrypoints we import from
+# Repo-specific ambient typing for the runtime Nix entrypoints imported from
 # `tnix/workspace.tnix`.
 
 type DotfilesMachine = {
@@ -36,7 +36,7 @@ type DotfilesHomeModuleArgs = {
   config :: dynamic;
   lib :: dynamic;
   machine :: DotfilesMachine;
-  pkgs :: NixpkgsPkgs;
+  pkgs :: dynamic;
   username :: String;
   mkShellEnvironment :: DotfilesShellEnvironmentFactory;
 };
@@ -44,11 +44,12 @@ type DotfilesHomeModuleArgs = {
 type DotfilesShellModuleArgs = {
   config :: dynamic;
   lib :: NixpkgsLib;
-  pkgs :: NixpkgsPkgs;
+  pkgs :: dynamic;
 };
 
 type DotfilesEditorModuleArgs = {
-  pkgs :: NixpkgsPkgs;
+  lib :: NixpkgsLib;
+  pkgs :: dynamic;
 };
 
 type DotfilesGitModuleArgs = {
@@ -57,7 +58,7 @@ type DotfilesGitModuleArgs = {
 };
 
 type DotfilesDevtoolsModuleArgs = {
-  pkgs :: NixpkgsPkgs;
+  pkgs :: dynamic;
 };
 
 type DotfilesDarwinModuleArgs = {
@@ -108,38 +109,38 @@ type DotfilesFlake = {
   outputs :: DotfilesFlakeInputs -> DotfilesFlakeOutputs;
 };
 
-declare "../flake.nix" {
+declare "../../flake.nix" {
   default :: DotfilesFlake;
 };
 
-declare "../machine/default.nix" {
+declare "../../machine/default.nix" {
   default :: DotfilesMachine;
 };
 
-declare "../home/default.nix" {
+declare "../../home/default.nix" {
   default :: DotfilesHomeModule;
 };
 
-declare "../home/shell.nix" {
+declare "../../home/shell.nix" {
   default :: DotfilesShellModule;
 };
 
-declare "../home/editor.nix" {
+declare "../../home/editor.nix" {
   default :: DotfilesEditorModule;
 };
 
-declare "../home/git.nix" {
+declare "../../home/git.nix" {
   default :: DotfilesGitModule;
 };
 
-declare "../home/devtools.nix" {
+declare "../../home/devtools.nix" {
   default :: DotfilesDevtoolsModule;
 };
 
-declare "../modules/darwin/core.nix" {
+declare "../../modules/darwin/core.nix" {
   default :: DotfilesDarwinModule;
 };
 
-declare "../modules/darwin/desktop-apps.nix" {
+declare "../../modules/darwin/desktop-apps.nix" {
   default :: DotfilesDesktopAppsModule;
 };

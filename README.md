@@ -11,6 +11,7 @@
 
 Personal macOS workstation configuration built with Nix, `nix-darwin`, and Home Manager.
 It is intentionally opinionated and optimized for one machine owner, not for safe one-click onboarding by strangers.
+Typed Nix source-of-truth lives under `tnix/`; generated runtime `.nix` files live under `generated/`, while tracked wrappers under `home/` and `machine/` keep stable import paths for Nix.
 
 ## What This Repo Does
 
@@ -29,23 +30,33 @@ It is intentionally opinionated and optimized for one machine owner, not for saf
    ./_legacy/init-machine-config.sh
    ```
 
-3. Review `machine/local.env`.
-4. Bootstrap a fresh Mac:
+3. Clone `tnix` into the standard workspace path used by this repo:
+
+   ```bash
+   mkdir -p "$HOME/Source/github.com/ubugeeei"
+   if [ ! -d "$HOME/Source/github.com/ubugeeei/tnix/.git" ]; then
+     git clone git@github.com:ubugeeei/tnix.git "$HOME/Source/github.com/ubugeeei/tnix"
+   fi
+   ```
+
+4. Review `machine/local.env`.
+5. Bootstrap a fresh Mac:
 
    ```bash
    ./_legacy/bootstrap-macos.sh
    ```
 
-5. Re-apply changes on an already bootstrapped machine:
+6. Re-apply changes on an already bootstrapped machine:
 
    ```bash
    ./_legacy/apply.sh
    ```
 
-6. Run a quick health check:
+7. Run a quick health check:
 
    ```bash
    ./_legacy/doctor.sh
+   ./tnix/sync.sh
    ```
 
 ## Safety Boundaries
@@ -58,14 +69,30 @@ It is intentionally opinionated and optimized for one machine owner, not for saf
 
 ## Repository Layout
 
-- [flake.nix](flake.nix): flake entrypoint and package wiring
-- [machine/default.nix](machine/default.nix): machine model derived from `ORIGIN_*` environment variables
-- [modules/darwin/core.nix](modules/darwin/core.nix): macOS system settings and activation hooks
-- [modules/darwin/desktop-apps.nix](modules/darwin/desktop-apps.nix): `/Applications` and input-method exposure
-- [home/default.nix](home/default.nix): Home Manager entrypoint for the user environment
-- [_legacy/](./_legacy): runnable shell entrypoints and compatibility wrappers
-- [scripts/](./scripts): source-only `.ush` implementations for repo commands
-- [docs/](docs): onboarding, accounts, apps, workspace, and manual follow-up notes
+```text
+.
+|-- flake.nix                 # flake entrypoint and package wiring
+|-- tnix/                     # typed source-of-truth for generated runtime files
+|   |-- src/                  # author .tnix here
+|   |   |-- machine/
+|   |   `-- home/
+|   |-- types/                # repo-local ambient declarations
+|   |-- workspace.tnix        # checked-in workspace entrypoint
+|   `-- sync.sh               # compile .tnix -> runtime .nix
+|-- generated/                # gitignored compiled .nix output
+|-- machine/
+|   |-- default.nix           # tracked wrapper importing generated/machine/default.nix
+|   `-- local.env.example     # local machine template
+|-- home/
+|   |-- default.nix           # handwritten Home Manager entrypoint
+|   `-- *.nix                 # tracked wrappers importing generated/home/*.nix
+|-- modules/darwin/           # handwritten system modules
+|-- scripts/                  # source-only .ush implementations
+|-- _legacy/                  # POSIX bootstrap entrypoints and wrappers
+`-- docs/                     # onboarding and operational notes
+```
+
+Edit `.tnix` under `tnix/src/` and run `./tnix/sync.sh`; generated runtime files land under `generated/`, and Nix keeps importing the stable wrapper paths under `machine/` and `home/`.
 
 ## Further Reading
 

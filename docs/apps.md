@@ -48,6 +48,7 @@ These are exposed directly into `/Applications` after `darwin-rebuild switch`.
 
 - Dia app installation source
 - Gmail and Google Calendar as dedicated native vendor apps
+- Vide IDE
 
 ## Why these are not all in the flake yet
 
@@ -59,3 +60,4 @@ These are exposed directly into `/Applications` after `darwin-rebuild switch`.
 - `moonbit` is custom-packaged in this repo from MoonBit's public macOS arm64 CLI and core downloads. Upstream currently serves those downloads via `latest` aliases, so the package is pinned by hash and needs a hash refresh when MoonBit rotates the artifact.
 - `Dia` is installed on this machine and already set as the default browser, but it still needs a reliable Nix package source or public macOS download for full reproducibility in this setup.
 - Gmail, Google Calendar, and Twitter are web services, so they are currently represented as Chrome app bundles rather than native vendor apps.
+- `Vide` is the IDE developed by ubugeeei and the editor used most often here, but it is not open-source, so this repo does not package it. `Zed` is the next editor in regular use, while `VS Code` and `Neovim` are primarily kept for validation of editor integrations and LSP behavior.

@@ -53,6 +53,8 @@ fi
 
 load_machine_env
 
+"$ROOT/tnix/sync.sh"
+
 sudo /usr/bin/env \
   HOME="$primary_home" \
   NIX_CONFIG="experimental-features = nix-command flakes" \

@@ -62,6 +62,8 @@ fn main() -> unknown!() {
 
     eval "$machine_env"
 
+    "$ROOT/tnix/sync.sh"
+
     if command -v darwin-rebuild >/dev/null 2>&1; then
       sudo /usr/bin/env \
         HOME="$primary_home" \

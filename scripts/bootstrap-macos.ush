@@ -81,6 +81,8 @@ fn main() -> unknown!() {
     machine_env=$(eval "$MACHINE_ENV_COMMAND")
     eval "$machine_env"
 
+    "$ROOT/tnix/sync.sh"
+
     sudo /usr/bin/env \
       HOME="$primary_home" \
       NIX_CONFIG="experimental-features = nix-command flakes" \

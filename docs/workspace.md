@@ -46,10 +46,12 @@ git clone git@gitlab.com:<group>/<repo>.git "$HOME/Source/gitlab.com/<group>/<re
 
 ## Tooling defaults
 
-- primary editor: Zed
-- secondary editor: Neovim
-- shell: `ush` is the default login shell, with zsh still available
-- typed Nix: repo ambient declarations live under `types/`, the checked-in tnix workspace entrypoint is `tnix/workspace.tnix`, Zed enables the `tnix` extension, Neovim auto-attaches `tnix-lsp` when it is on PATH, and current declaration-sourcing limits are noted in `docs/tnix.md`
+- primary editor: `Vide`, the IDE developed by ubugeeei. It is the editor used day to day, but it is not open-source, so it sits outside this repository's reproducible setup.
+- secondary editor: `Zed`
+- verification editors: `VS Code` and `Neovim` are not daily drivers here; they are mainly kept around to verify editor integrations and LSP behavior for tools developed by ubugeeei
+- frequently used languages: `Rust`, `TypeScript` with `Vue`, `tnix`, and `Haskell`
+- shell: `ush` means "ubugeeei sh", the modern `sh` developed by ubugeeei; it is the default login shell here, with zsh still available
+- typed Nix: `tnix` means "type nix", the Nix type system developed by ubugeeei; repo ambient declarations live under `tnix/types/`, runtime source-of-truth lives under `tnix/src/`, `./tnix/sync.sh` compiles gitignored outputs into `generated/`, tracked wrappers under `home/` and `machine/` keep stable import paths, the checked-in workspace entrypoint is `tnix/workspace.tnix`, upstream `tnix` declaration packs are read from `$HOME/Source/github.com/ubugeeei/tnix/registry`, Zed enables the `tnix` extension, and Neovim auto-attaches `tnix-lsp` when it is on PATH for verification work
 - `scripts/` is source-only and now holds the `.ush` implementation for every repo command, while `_legacy/*.sh` keeps shell entrypoints and compatibility wrappers; bootstrap-oriented entrypoints stay POSIX `sh`, and operational helpers such as `apply`, `clone`, `doctor`, `init-repo`, `remove-unused-apple-apps`, `set-default-browser`, and `fetch-github-profile-icon` run through `ush`
 - prompt: starship
 - runtime manager: Vite+ (`vp env`)
