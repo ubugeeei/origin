@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 tnix_repo=${TNIX_REPO:-${ORIGIN_TNIX_REPO:-"$HOME/Source/github.com/ubugeeei/tnix"}}
 nix_bin=${NIX_BIN:-}
 

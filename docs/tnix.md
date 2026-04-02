@@ -4,11 +4,11 @@
 
 ## Current stance in this repo
 
-- Keep `tnix/workspace.tnix` and repo-specific declarations in `tnix/types/`.
+- Keep `src/tnix/workspace.tnix` and repo-specific declarations in `src/tnix/types/`.
 - Load upstream declaration packs through `declarationPacks` instead of copying them into this repo.
 - Keep only project-specific declarations checked in here.
-- Author runtime files under `tnix/src/` and compile them into gitignored `generated/*.nix`.
-- Keep thin tracked wrappers under `home/` and `machine/` so flake imports stay stable.
+- Author runtime files under `src/tnix/src/` and compile them into gitignored `generated/*.nix`.
+- Keep runtime Nix modules under `src/nix/` so `flake.nix` can import a stable source tree.
 
 ## Upstream packs now used here
 
@@ -32,19 +32,19 @@ If the real checkout lives somewhere else on a machine, make that path exist wit
 
 ## What stays local
 
-- `tnix/types/dotfiles.d.tnix` stays in-repo because it describes this repo's actual `flake.nix`, machine module, and Home Manager modules.
+- `src/tnix/types/dotfiles.d.tnix` stays in-repo because it describes this repo's actual `flake.nix`, machine module, and Home Manager modules.
 - `builtins = false` stays set so `tnix scaffold` does not recreate a local `builtins.d.tnix`.
 - We intentionally do not load the whole `registry/workspace/` directory, because `flake.d.tnix` would overlap with this repo's custom `flake.nix` declaration surface.
 
 ## Current .tnix sources
 
-- `tnix/src/machine/default.tnix` generates `generated/machine/default.nix`
-- `tnix/src/home/shell.tnix` generates `generated/home/shell.nix`
-- `tnix/src/home/editor.tnix` generates `generated/home/editor.nix`
-- `tnix/src/home/git.tnix` generates `generated/home/git.nix`
-- `tnix/src/home/devtools.tnix` generates `generated/home/devtools.nix`
-- runtime compile helpers live in `tnix/sync.sh`
-- tracked wrappers under `machine/` and `home/` import those generated files for Nix module evaluation
+- `src/tnix/src/machine/default.tnix` generates `generated/machine/default.nix`
+- `src/tnix/src/home/shell.tnix` generates `generated/home/shell.nix`
+- `src/tnix/src/home/editor.tnix` generates `generated/home/editor.nix`
+- `src/tnix/src/home/git.tnix` generates `generated/home/git.nix`
+- `src/tnix/src/home/devtools.tnix` generates `generated/home/devtools.nix`
+- runtime compile helpers live in `src/tnix/sync.sh`
+- `flake.nix` and `src/nix/` read those outputs as part of the runtime tree
 
 Project builds write:
 
@@ -54,8 +54,8 @@ Project builds write:
 Typical loop:
 
 ```bash
-./tnix/sync.sh
-nix run 'path:$HOME/Source/github.com/ubugeeei/tnix#tnix' -- check ./tnix/workspace.tnix
+./src/tnix/sync.sh
+nix run 'path:$HOME/Source/github.com/ubugeeei/tnix#tnix' -- check ./src/tnix/workspace.tnix
 nix run 'path:$HOME/Source/github.com/ubugeeei/tnix#tnix' -- check-project .
 nix run 'path:$HOME/Source/github.com/ubugeeei/tnix#tnix' -- build .
 ```
@@ -66,5 +66,5 @@ nix run 'path:$HOME/Source/github.com/ubugeeei/tnix#tnix' -- build .
 - No copied `tnix.config.d.tnix` in this repo.
 - No copied ecosystem alias packs in this repo.
 - Upstream pack updates flow in by updating the `tnix` checkout instead of editing duplicate files here.
-- Runtime Nix imports stay stable via thin tracked wrappers.
+- Runtime Nix imports now come from the dedicated `src/nix/` tree instead of being scattered at the repository root.
 - Generated runtime `.nix` artifacts do not need to be hand-edited or tracked.

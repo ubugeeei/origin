@@ -1,12 +1,12 @@
 let
   flake :: DotfilesFlake;
-  flake = import ../flake.nix;
+  flake = import ../../flake.nix;
 
   machine :: DotfilesMachine;
   machine = import ./src/machine/default.tnix;
 
   homeModule :: DotfilesHomeModule;
-  homeModule = import ../home/default.nix;
+  homeModule = import ../nix/home/default.nix;
 
   shellModule :: DotfilesShellModule;
   shellModule = import ./src/home/shell.tnix;
@@ -21,10 +21,10 @@ let
   devtoolsModule = import ./src/home/devtools.tnix;
 
   darwinCoreModule :: DotfilesDarwinModule;
-  darwinCoreModule = import ../modules/darwin/core.nix;
+  darwinCoreModule = import ../nix/modules/darwin/core.nix;
 
   desktopAppsModule :: DotfilesDesktopAppsModule;
-  desktopAppsModule = import ../modules/darwin/desktop-apps.nix;
+  desktopAppsModule = import ../nix/modules/darwin/desktop-apps.nix;
 in
 {
   description = flake.description;

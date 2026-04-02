@@ -14,7 +14,7 @@ shift
 
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repo_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
-target="$repo_root/scripts/$script_name"
+target="$repo_root/src/ush/$script_name"
 
 if [ ! -f "$target" ]; then
   printf '%s\n' "ush script not found: $target" >&2
@@ -28,7 +28,7 @@ if command -v ush >/dev/null 2>&1; then
 fi
 
 if command -v nix >/dev/null 2>&1; then
-  "$repo_root/tnix/sync.sh"
+  "$repo_root/src/tnix/sync.sh"
   exec nix run .#ush -- "$target" "$@"
 fi
 

@@ -1,5 +1,5 @@
 # Repo-specific ambient typing for the runtime Nix entrypoints imported from
-# `tnix/workspace.tnix`.
+# `src/tnix/workspace.tnix`.
 
 type DotfilesMachine = {
   system :: NixpkgsSystem;
@@ -109,38 +109,38 @@ type DotfilesFlake = {
   outputs :: DotfilesFlakeInputs -> DotfilesFlakeOutputs;
 };
 
-declare "../../flake.nix" {
+declare "../../../flake.nix" {
   default :: DotfilesFlake;
 };
 
-declare "../../machine/default.nix" {
+declare "../../nix/machine/default.nix" {
   default :: DotfilesMachine;
 };
 
-declare "../../home/default.nix" {
+declare "../../nix/home/default.nix" {
   default :: DotfilesHomeModule;
 };
 
-declare "../../home/shell.nix" {
+declare "../../nix/home/shell.nix" {
   default :: DotfilesShellModule;
 };
 
-declare "../../home/editor.nix" {
+declare "../../nix/home/editor.nix" {
   default :: DotfilesEditorModule;
 };
 
-declare "../../home/git.nix" {
+declare "../../nix/home/git.nix" {
   default :: DotfilesGitModule;
 };
 
-declare "../../home/devtools.nix" {
+declare "../../nix/home/devtools.nix" {
   default :: DotfilesDevtoolsModule;
 };
 
-declare "../../modules/darwin/core.nix" {
+declare "../../nix/modules/darwin/core.nix" {
   default :: DotfilesDarwinModule;
 };
 
-declare "../../modules/darwin/desktop-apps.nix" {
+declare "../../nix/modules/darwin/desktop-apps.nix" {
   default :: DotfilesDesktopAppsModule;
 };

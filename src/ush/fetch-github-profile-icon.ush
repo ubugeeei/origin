@@ -52,7 +52,7 @@ fn main() -> unknown!() {
     ()
   }
 
-  let repo_root = from_source("..").resolve()
+  let repo_root = from_source("../..").resolve()
   let target_dir = repo_root.join("assets").join("profile-icons").join("github").join(username)
   let target_file = target_dir.join("avatar.jpg")
   let tmp_image = tmpfile()

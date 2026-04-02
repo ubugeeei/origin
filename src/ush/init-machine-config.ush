@@ -14,7 +14,7 @@ fn write_shell_script(script: String) -> String {
 }
 
 fn main() -> unknown!() {
-  let repo_root = from_source("..").resolve()
+  let repo_root = from_source("../..").resolve()
   let force_value = get_or("INIT_MACHINE_CONFIG_FORCE", "0")
 
   let script = """

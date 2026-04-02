@@ -1,8 +1,8 @@
 {
   name = "dotfiles";
-  sourceDir = ./tnix/src;
-  entry = ./tnix/workspace.tnix;
-  declarationDir = ./tnix/types;
+  sourceDir = ./src/tnix/src;
+  entry = ./src/tnix/workspace.tnix;
+  declarationDir = ./src/tnix/types;
   declarationPacks = [
     ../Source/github.com/ubugeeei/tnix/registry/workspace/builtins.d.tnix
     ../Source/github.com/ubugeeei/tnix/registry/workspace/tnix.config.d.tnix

@@ -1,4 +1,4 @@
 { lib, machine, ... }:
-(import ../generated/home/git.nix {
+(import ../../../generated/home/git.nix {
   inherit lib machine;
 })

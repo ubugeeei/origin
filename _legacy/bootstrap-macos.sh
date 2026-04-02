@@ -53,7 +53,7 @@ fi
 
 load_machine_env
 
-"$ROOT/tnix/sync.sh"
+"$ROOT/src/tnix/sync.sh"
 
 sudo /usr/bin/env \
   HOME="$primary_home" \

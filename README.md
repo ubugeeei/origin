@@ -11,7 +11,7 @@
 
 Personal macOS workstation configuration built with Nix, `nix-darwin`, and Home Manager.
 It is intentionally opinionated and optimized for one machine owner, not for safe one-click onboarding by strangers.
-Typed Nix source-of-truth lives under `tnix/`; generated runtime `.nix` files live under `generated/`, while tracked wrappers under `home/` and `machine/` keep stable import paths for Nix.
+Implementation source now lives under `src/`; typed Nix source-of-truth is under `src/tnix/`, runtime Nix modules and packages are under `src/nix/`, and `.ush` command sources are under `src/ush/`.
 
 ## What This Repo Does
 
@@ -19,7 +19,7 @@ Typed Nix source-of-truth lives under `tnix/`; generated runtime `.nix` files li
 - manages the user environment through Home Manager
 - installs CLI tools, editors, and selected GUI apps
 - exposes selected Nix-managed apps into `/Applications`
-- keeps machine-specific values in `machine/local.env`, which is intentionally gitignored
+- keeps machine-specific values in `machine/local.env`, which is created on demand and intentionally gitignored
 
 ## Quick Start
 
@@ -56,7 +56,7 @@ Typed Nix source-of-truth lives under `tnix/`; generated runtime `.nix` files li
 
    ```bash
    ./_legacy/doctor.sh
-   ./tnix/sync.sh
+   ./src/tnix/sync.sh
    ```
 
 ## Safety Boundaries
@@ -72,27 +72,28 @@ Typed Nix source-of-truth lives under `tnix/`; generated runtime `.nix` files li
 ```text
 .
 |-- flake.nix                 # flake entrypoint and package wiring
-|-- tnix/                     # typed source-of-truth for generated runtime files
-|   |-- src/                  # author .tnix here
-|   |   |-- machine/
-|   |   `-- home/
-|   |-- types/                # repo-local ambient declarations
-|   |-- workspace.tnix        # checked-in workspace entrypoint
-|   `-- sync.sh               # compile .tnix -> runtime .nix
+|-- tnix.config.tnix          # tnix project configuration
 |-- generated/                # gitignored compiled .nix output
-|-- machine/
-|   |-- default.nix           # tracked wrapper importing generated/machine/default.nix
-|   `-- local.env.example     # local machine template
-|-- home/
-|   |-- default.nix           # handwritten Home Manager entrypoint
-|   `-- *.nix                 # tracked wrappers importing generated/home/*.nix
-|-- modules/darwin/           # handwritten system modules
-|-- scripts/                  # source-only .ush implementations
+|-- src/
+|   |-- tnix/                 # typed source-of-truth for generated runtime files
+|   |   |-- src/              # author .tnix here
+|   |   |   |-- machine/
+|   |   |   `-- home/
+|   |   |-- types/            # repo-local ambient declarations
+|   |   |-- workspace.tnix    # checked-in workspace entrypoint
+|   |   `-- sync.sh           # compile .tnix -> runtime .nix
+|   |-- nix/                  # runtime Nix modules and package definitions
+|   |   |-- home/
+|   |   |-- machine/
+|   |   |-- modules/
+|   |   `-- pkgs/
+|   |-- templates/            # tracked helper templates such as machine.local.env.example
+|   `-- ush/                  # source-only .ush implementations
 |-- _legacy/                  # POSIX bootstrap entrypoints and wrappers
 `-- docs/                     # onboarding and operational notes
 ```
 
-Edit `.tnix` under `tnix/src/` and run `./tnix/sync.sh`; generated runtime files land under `generated/`, and Nix keeps importing the stable wrapper paths under `machine/` and `home/`.
+Edit `.tnix` under `src/tnix/src/` and run `./src/tnix/sync.sh`; generated runtime files land under `generated/`, and `flake.nix` imports runtime modules from `src/nix/`. Local machine overrides still live at `machine/local.env`, but that directory is created only when `./_legacy/init-machine-config.sh` is run; the tracked example now lives at [src/templates/machine.local.env.example](src/templates/machine.local.env.example).
 
 ## Further Reading
 

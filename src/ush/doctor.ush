@@ -29,7 +29,7 @@ fn resolved_command_path(name: String) -> String {
 }
 
 let home = get_or("HOME", "")
-let repo_root = from_source("..").resolve()
+let repo_root = from_source("../..").resolve()
 
 let candidate_paths = [home.join(".vite-plus").join("bin"), home.join(".local").join("bin"), home.join(".moon").join("bin"), home.join(".local").join("share").join("mise").join("shims"), home.join(".cargo").join("bin"), home.join("go").join("bin"), home.join(".bun").join("bin"), home.join("Library").join("pnpm"), home.join(".local").join("state").join("nix").join("profiles").join("home-manager").join("home-path").join("bin"), repo_root.join("result").join("sw").join("bin")]
 

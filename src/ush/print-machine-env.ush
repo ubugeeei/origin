@@ -14,7 +14,7 @@ fn write_shell_script(script: String) -> String {
 }
 
 fn main() -> unknown!() {
-  let repo_root = from_source("..").resolve()
+  let repo_root = from_source("../..").resolve()
   let mode = get_or("PRINT_MACHINE_ENV_MODE", "tsv")
 
   let script = """

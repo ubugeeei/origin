@@ -13,7 +13,7 @@
 
   outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, ... }:
     let
-      machine = import ./machine/default.nix;
+      machine = import ./src/nix/machine/default.nix;
       system = machine.system;
       username = machine.username;
       defaultWorkspaceRoot = machine.workspaceRoot;
@@ -91,14 +91,14 @@
       homeConfigurationName = "${username}@${machine.networking.localHostName}";
       overlays = [
         (final: prev: {
-          azookey-mac = prev.callPackage ./pkgs/azookey-mac.nix { };
-          chrome-webapp-bundle = prev.callPackage ./pkgs/chrome-webapp-bundle.nix { };
-          moonbit = prev.callPackage ./pkgs/moonbit.nix { };
-          nova-font = prev.callPackage ./pkgs/nova-font.nix { };
+          azookey-mac = prev.callPackage ./src/nix/pkgs/azookey-mac.nix { };
+          chrome-webapp-bundle = prev.callPackage ./src/nix/pkgs/chrome-webapp-bundle.nix { };
+          moonbit = prev.callPackage ./src/nix/pkgs/moonbit.nix { };
+          nova-font = prev.callPackage ./src/nix/pkgs/nova-font.nix { };
           ush = inputs.ush.packages.${system}.default.overrideAttrs (_: {
             doCheck = false;
           });
-          vite-plus = prev.callPackage ./pkgs/vite-plus.nix { };
+          vite-plus = prev.callPackage ./src/nix/pkgs/vite-plus.nix { };
           gmail-app = final.chrome-webapp-bundle {
             appName = "Gmail";
             bundleId = "${machine.appNamespace}.gmail";
@@ -114,7 +114,7 @@
             bundleId = "${machine.appNamespace}.twitter";
             url = "https://x.com/";
           };
-          microsoft-edge-mac = prev.callPackage ./pkgs/microsoft-edge-mac.nix { };
+          microsoft-edge-mac = prev.callPackage ./src/nix/pkgs/microsoft-edge-mac.nix { };
 
           gmail-open = prev.writeShellApplication {
             name = "gmail-open";
@@ -149,7 +149,7 @@
           inherit machine username mkShellEnvironment;
         };
         modules = [
-          ./home/default.nix
+          ./src/nix/home/default.nix
         ];
       };
 
@@ -159,8 +159,8 @@
           inherit inputs machine username mkShellEnvironment;
         };
         modules = [
-          ./modules/darwin/core.nix
-          ./modules/darwin/desktop-apps.nix
+          ./src/nix/modules/darwin/core.nix
+          ./src/nix/modules/darwin/desktop-apps.nix
           home-manager.darwinModules.home-manager
           {
             home-manager.backupFileExtension = "before-origin";
@@ -169,7 +169,7 @@
             home-manager.extraSpecialArgs = {
               inherit machine username mkShellEnvironment;
             };
-            home-manager.users.${username} = import ./home/default.nix;
+            home-manager.users.${username} = import ./src/nix/home/default.nix;
           }
         ];
       };

@@ -4,18 +4,18 @@ This document is the main walkthrough for bringing a fresh macOS machine into th
 
 Repository script policy:
 
-- `scripts/` is source-only and now contains only `.ush` sources
+- `src/ush/` is source-only and now contains only `.ush` sources
 - preserved shell entrypoints and compatibility wrappers live in `_legacy/*.sh`
-- every `_legacy` command now has a matching `.ush` implementation under `scripts/`
+- every `_legacy` command now has a matching `.ush` implementation under `src/ush/`
 - `_legacy/bootstrap-macos.sh`, `_legacy/init-machine-config.sh`, and `_legacy/print-machine-env.sh` stay POSIX `sh` as the bootstrap-safe entrypoints, even though matching `.ush` sources now exist
-- wrappers such as `apply`, `clone`, `doctor`, `init-repo`, `remove-unused-apple-apps`, `set-default-browser`, and `fetch-github-profile-icon` delegate into `scripts/*.ush`
+- wrappers such as `apply`, `clone`, `doctor`, `init-repo`, `remove-unused-apple-apps`, `set-default-browser`, and `fetch-github-profile-icon` delegate into `src/ush/*.ush`
 - the `_legacy/run-ush.sh` wrapper can fall back to `nix run .#ush` before the login shell switch has been applied
-- `./tnix/sync.sh` compiles typed `.tnix` sources into the runtime `.nix` files that `flake.nix` and Home Manager still import
+- `./src/tnix/sync.sh` compiles typed `.tnix` sources into the runtime `.nix` files that `flake.nix` imports from `src/nix/`
 
 ## Repo-Specific Tools
 
-- `ush` means "ubugeeei sh". It is the modern `sh` developed by ubugeeei, and this repo uses it for the main script implementations under `scripts/*.ush` plus the default login shell.
-- `tnix` means "type nix". It is the Nix type system developed by ubugeeei, and this repo uses it for typed Nix sources under `tnix/`, repo-local ambient declarations under `tnix/types/`, and compiled runtime `.nix` outputs under `generated/`.
+- `ush` means "ubugeeei sh". It is the modern `sh` developed by ubugeeei, and this repo uses it for the main script implementations under `src/ush/*.ush` plus the default login shell.
+- `tnix` means "type nix". It is the Nix type system developed by ubugeeei, and this repo uses it for typed Nix sources under `src/tnix/`, repo-local ambient declarations under `src/tnix/types/`, and compiled runtime `.nix` outputs under `generated/`.
 - `Vide` is the IDE developed by ubugeeei. It is the editor used day to day, but it is not open-source, so this repo does not try to package or reproduce it.
 - The languages used most often in this setup are `Rust`, `TypeScript` with `Vue`, `tnix`, and `Haskell`.
 
@@ -55,7 +55,7 @@ Repository script policy:
    cd /path/to/origin
    ```
 
-3. Scaffold the machine-specific override file:
+3. Scaffold the machine-specific override file in `machine/local.env`:
 
    ```bash
    ./_legacy/init-machine-config.sh
@@ -94,19 +94,20 @@ Repository script policy:
 
    ```bash
    ./_legacy/doctor.sh
-   ./tnix/sync.sh
-   nix run "path:$HOME/Source/github.com/ubugeeei/tnix#tnix" -- check ./tnix/workspace.tnix
+   ./src/tnix/sync.sh
+   nix run "path:$HOME/Source/github.com/ubugeeei/tnix#tnix" -- check ./src/tnix/workspace.tnix
    ```
 
 Notes:
 
 - `machine/local.env` is gitignored and is the intended place for per-Mac values such as username, home directory, computer name, workspace root, and Git identity.
-- `machine/local.env.example` shows the supported variables if you want to inspect the shape before generating the local file.
+- [src/templates/machine.local.env.example](../src/templates/machine.local.env.example) shows the supported variables if you want to inspect the shape before generating the local file.
+- The `machine/` directory is not tracked anymore; `_legacy/init-machine-config.sh` creates it only when you actually generate `machine/local.env`.
 - If `machine/local.env` is missing, `_legacy/bootstrap-macos.sh` and `_legacy/apply.sh` derive values from the current Mac at runtime.
 - The canonical flake target stays `workstation`; local scripts invoke it through `path:$PWD#workstation` so uncommitted local files are included during evaluation. The actual macOS `hostName` and `localHostName` still come from `machine/local.env` or the detected machine defaults.
 - `ORIGIN_TOUCH_ID_SUDO_AUTH` defaults to `false`. Turn it on only if you want nix-darwin to manage Touch ID for `sudo` on that Mac.
 - On the first `switch`, existing dotfiles managed by Home Manager are backed up with the `.before-origin` suffix instead of being overwritten in place.
-- This repo expects `ubugeeei/tnix` at `$HOME/Source/github.com/ubugeeei/tnix` so `tnix.config.tnix` can read upstream declaration packs and `./tnix/sync.sh` can compile runtime `.nix` files without copying registry packs into this repository.
+- This repo expects `ubugeeei/tnix` at `$HOME/Source/github.com/ubugeeei/tnix` so `tnix.config.tnix` can read upstream declaration packs and `./src/tnix/sync.sh` can compile runtime `.nix` files without copying registry packs into this repository.
 - `Vide` remains a manual install and personal workflow choice. `Zed` is the next editor in regular use, while `VS Code` and `Neovim` are mainly there to validate LSP integrations for ubugeeei tooling.
 
 ## Current App Status

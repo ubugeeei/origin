@@ -38,8 +38,8 @@ fn main() -> unknown!() {
   let arg4 = get_or("RUN_USH_ARG4", "")
   let arg5 = get_or("RUN_USH_ARG5", "")
   let arg6 = get_or("RUN_USH_ARG6", "")
-  let repo_root = from_source("..").resolve()
-  let target = repo_root.join("scripts").join(script_name)
+  let repo_root = from_source("../..").resolve()
+  let target = repo_root.join("src").join("ush").join(script_name)
 
   if script_name == "" {
     fail("RUN_USH_SCRIPT_NAME is required")?

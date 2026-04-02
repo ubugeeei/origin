@@ -13,10 +13,10 @@ Git behavior in this setup:
 
 Relevant repo config:
 
-- Git and SSH defaults source: [tnix/src/home/git.tnix](../tnix/src/home/git.tnix)
-- machine-specific Git identity defaults source: [tnix/src/machine/default.tnix](../tnix/src/machine/default.tnix)
-- local machine override template: [machine/local.env.example](../machine/local.env.example)
-- Home Manager entrypoint: [home/default.nix](../home/default.nix)
+- Git and SSH defaults source: [src/tnix/src/home/git.tnix](../src/tnix/src/home/git.tnix)
+- machine-specific Git identity defaults source: [src/tnix/src/machine/default.tnix](../src/tnix/src/machine/default.tnix)
+- local machine override template: [src/templates/machine.local.env.example](../src/templates/machine.local.env.example)
+- Home Manager entrypoint: [src/nix/home/default.nix](../src/nix/home/default.nix)
 
 ## SSH Keys
 

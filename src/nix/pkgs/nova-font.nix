@@ -3,7 +3,7 @@ stdenvNoCC.mkDerivation {
   pname = "nova-font";
   version = "1.0.0";
 
-  src = ../assets/fonts;
+  src = ../../../assets/fonts;
 
   dontConfigure = true;
   dontBuild = true;
@@ -27,7 +27,7 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = with lib; {
-    description = "Repo-managed Nova font assets bundled with this workstation config";
+    description = "Repo-local font assets bundled with this workstation config";
     license = licenses.unfreeRedistributable;
     platforms = platforms.darwin;
   };
