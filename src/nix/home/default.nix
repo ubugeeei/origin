@@ -442,10 +442,18 @@ in
   home.stateVersion = "25.05";
 
   imports = [
-    ./git.nix
-    ./shell.nix
-    ./editor.nix
-    ./devtools.nix
+    ({ config, lib, machine, pkgs, ... }: import ../../../generated/home/git.nix {
+      inherit config lib machine pkgs;
+    })
+    ({ config, lib, pkgs, ... }: import ../../../generated/home/shell.nix {
+      inherit config lib pkgs;
+    })
+    ({ config, lib, pkgs, ... }: import ../../../generated/home/editor.nix {
+      inherit config lib pkgs;
+    })
+    ({ config, lib, pkgs, ... }: import ../../../generated/home/devtools.nix {
+      inherit config lib pkgs;
+    })
   ];
 
   home.packages = with pkgs; [

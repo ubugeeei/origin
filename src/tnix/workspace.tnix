@@ -21,10 +21,10 @@ let
   devtoolsModule = import ./src/home/devtools.tnix;
 
   darwinCoreModule :: DotfilesDarwinModule;
-  darwinCoreModule = import ../nix/modules/darwin/core.nix;
+  darwinCoreModule = import ./src/modules/darwin/core.tnix;
 
   desktopAppsModule :: DotfilesDesktopAppsModule;
-  desktopAppsModule = import ../nix/modules/darwin/desktop-apps.nix;
+  desktopAppsModule = import ./src/modules/darwin/desktop-apps.tnix;
 in
 {
   description = flake.description;

@@ -1,15 +1,25 @@
-{ stdenvNoCC, fetchurl, lib }:
 let
+  package :: dynamic;
+  # @tnix-ignore
+  package = (args :: {
+    stdenvNoCC :: dynamic;
+    fetchurl :: dynamic;
+    lib :: dynamic;
+  }):
+let
+  stdenvNoCC = args.stdenvNoCC;
+  fetchurl = args.fetchurl;
+  lib = args.lib;
   packageName =
-    if stdenvNoCC.hostPlatform.system == "aarch64-darwin" then
+    if builtins.elem stdenvNoCC.hostPlatform.system [ "aarch64-darwin" ] then
       "darwin-arm64"
-    else if stdenvNoCC.hostPlatform.system == "x86_64-darwin" then
+    else if builtins.elem stdenvNoCC.hostPlatform.system [ "x86_64-darwin" ] then
       "darwin-x64"
     else
       throw "vite-plus is only packaged for macOS";
 
   integrityHash =
-    if packageName == "darwin-arm64" then
+    if builtins.elem packageName [ "darwin-arm64" ] then
       "sha512-YGKHyehGe0aWnaPQfGMRzQrhmRzBKZ53rNMwvTekk7qajRZlfp+tlOeDZLRfJVFubP26pmjPg8drV25oRd5HUQ=="
     else
       "sha512-hUOBVbs8LGHRX0KkUiSYKfWUpUXXN3EB+aGKbT41sLh/E+KYP4V3ybHhLB70xxZsCXHbVL9XQ0dw10fMfDO1uA==";
@@ -26,32 +36,21 @@ stdenvNoCC.mkDerivation rec {
   dontConfigure = true;
   dontBuild = true;
 
-  unpackPhase = ''
-    runHook preUnpack
-    tar -xzf "$src"
-    runHook postUnpack
-  '';
+  unpackPhase = builtins.readFile ../../src/templates/nix/pkgs/vite-plus/unpack.sh;
 
-  installPhase = ''
-    runHook preInstall
+  installPhase = builtins.readFile ../../src/templates/nix/pkgs/vite-plus/install.sh;
 
-    mkdir -p "$out/bin"
-    cp package/vp "$out/bin/vp"
-    chmod +x "$out/bin/vp"
-    ln -s vp "$out/bin/vite-plus"
-
-    runHook postInstall
-  '';
-
-  meta = with lib; {
+  meta = {
     description = "Vite+ global CLI for macOS";
     homepage = "https://viteplus.dev/";
-    sourceProvenance = with sourceTypes; [ binaryNativeCode ];
-    license = licenses.mit;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    license = lib.licenses.mit;
     platforms = [
       "aarch64-darwin"
       "x86_64-darwin"
     ];
     maintainers = [ ];
   };
-}
+};
+in
+package

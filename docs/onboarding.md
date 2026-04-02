@@ -9,8 +9,8 @@ Repository script policy:
 - every `_legacy` command now has a matching `.ush` implementation under `src/ush/`
 - `_legacy/bootstrap-macos.sh`, `_legacy/init-machine-config.sh`, and `_legacy/print-machine-env.sh` stay POSIX `sh` as the bootstrap-safe entrypoints, even though matching `.ush` sources now exist
 - wrappers such as `apply`, `clone`, `doctor`, `init-repo`, `remove-unused-apple-apps`, `set-default-browser`, and `fetch-github-profile-icon` delegate into `src/ush/*.ush`
-- the `_legacy/run-ush.sh` wrapper can fall back to `nix run .#ush` before the login shell switch has been applied
-- `./src/tnix/sync.sh` compiles typed `.tnix` sources into the runtime `.nix` files that `flake.nix` imports from `src/nix/`
+- the `_legacy/run-ush.sh` wrapper can fall back to `nix run "path:$PWD#ush"` before the login shell switch has been applied
+- `./src/tnix/sync.sh` compiles typed `.tnix` sources into the runtime `.nix` files that `flake.nix` imports from `generated/`
 
 ## Repo-Specific Tools
 

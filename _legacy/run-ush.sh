@@ -29,7 +29,7 @@ fi
 
 if command -v nix >/dev/null 2>&1; then
   "$repo_root/src/tnix/sync.sh"
-  exec nix run .#ush -- "$target" "$@"
+  exec nix run "path:$repo_root#ush" -- "$target" "$@"
 fi
 
 printf '%s\n' "ush is not installed and nix is unavailable; run ./_legacy/bootstrap-macos.sh first." >&2

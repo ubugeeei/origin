@@ -1,0 +1,52 @@
+let
+  package :: dynamic;
+  # @tnix-ignore
+  package = (args :: {
+    stdenvNoCC :: dynamic;
+    lib :: dynamic;
+  }):
+    let
+      stdenvNoCC = args.stdenvNoCC;
+      lib = args.lib;
+    in
+    (appArgs :: {
+      appName :: String;
+      bundleId :: String;
+      url :: String;
+    }):
+      let
+        appName = appArgs.appName;
+        bundleId = appArgs.bundleId;
+        url = appArgs.url;
+        renderTemplate = path: from: to:
+          builtins.replaceStrings from to (builtins.readFile path);
+      in
+stdenvNoCC.mkDerivation {
+  pname = lib.strings.sanitizeDerivationName (lib.strings.toLower appName);
+  version = "1.0.0";
+
+  dontUnpack = true;
+
+  installPhase =
+    renderTemplate
+      ../../src/templates/nix/pkgs/chrome-webapp-bundle/install.sh
+      [
+        "@APP_NAME@"
+        "@BUNDLE_ID@"
+        "@URL@"
+      ]
+      [
+        appName
+        bundleId
+        url
+      ];
+
+  meta = {
+    description = "${appName} launcher bundle for macOS";
+    platforms = lib.platforms.darwin;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    license = lib.licenses.mit;
+  };
+};
+in
+package

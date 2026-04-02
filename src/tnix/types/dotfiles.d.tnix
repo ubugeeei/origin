@@ -113,34 +113,6 @@ declare "../../../flake.nix" {
   default :: DotfilesFlake;
 };
 
-declare "../../nix/machine/default.nix" {
-  default :: DotfilesMachine;
-};
-
 declare "../../nix/home/default.nix" {
   default :: DotfilesHomeModule;
-};
-
-declare "../../nix/home/shell.nix" {
-  default :: DotfilesShellModule;
-};
-
-declare "../../nix/home/editor.nix" {
-  default :: DotfilesEditorModule;
-};
-
-declare "../../nix/home/git.nix" {
-  default :: DotfilesGitModule;
-};
-
-declare "../../nix/home/devtools.nix" {
-  default :: DotfilesDevtoolsModule;
-};
-
-declare "../../nix/modules/darwin/core.nix" {
-  default :: DotfilesDarwinModule;
-};
-
-declare "../../nix/modules/darwin/desktop-apps.nix" {
-  default :: DotfilesDesktopAppsModule;
 };

@@ -13,7 +13,7 @@
 
   outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, ... }:
     let
-      machine = import ./src/nix/machine/default.nix;
+      machine = import ./generated/machine/default.nix;
       system = machine.system;
       username = machine.username;
       defaultWorkspaceRoot = machine.workspaceRoot;
@@ -91,14 +91,51 @@
       homeConfigurationName = "${username}@${machine.networking.localHostName}";
       overlays = [
         (final: prev: {
-          azookey-mac = prev.callPackage ./src/nix/pkgs/azookey-mac.nix { };
-          chrome-webapp-bundle = prev.callPackage ./src/nix/pkgs/chrome-webapp-bundle.nix { };
-          moonbit = prev.callPackage ./src/nix/pkgs/moonbit.nix { };
-          nova-font = prev.callPackage ./src/nix/pkgs/nova-font.nix { };
+          azookey-mac = prev.callPackage ({
+            stdenvNoCC,
+            fetchurl,
+            xar,
+            cpio,
+            gzip,
+            lib,
+          }:
+            import ./generated/pkgs/azookey-mac.nix {
+              inherit stdenvNoCC fetchurl xar cpio gzip lib;
+            }) { };
+          chrome-webapp-bundle = prev.callPackage ({
+            stdenvNoCC,
+            lib,
+          }:
+            import ./generated/pkgs/chrome-webapp-bundle.nix {
+              inherit stdenvNoCC lib;
+            }) { };
+          moonbit = prev.callPackage ({
+            stdenvNoCC,
+            fetchurl,
+            lib,
+          }:
+            import ./generated/pkgs/moonbit.nix {
+              inherit stdenvNoCC fetchurl lib;
+            }) { };
+          nova-font = prev.callPackage ({
+            lib,
+            stdenvNoCC,
+          }:
+            import ./generated/pkgs/nova-font.nix {
+              inherit lib stdenvNoCC;
+              fontSrc = ./assets/fonts;
+            }) { };
           ush = inputs.ush.packages.${system}.default.overrideAttrs (_: {
             doCheck = false;
           });
-          vite-plus = prev.callPackage ./src/nix/pkgs/vite-plus.nix { };
+          vite-plus = prev.callPackage ({
+            stdenvNoCC,
+            fetchurl,
+            lib,
+          }:
+            import ./generated/pkgs/vite-plus.nix {
+              inherit stdenvNoCC fetchurl lib;
+            }) { };
           gmail-app = final.chrome-webapp-bundle {
             appName = "Gmail";
             bundleId = "${machine.appNamespace}.gmail";
@@ -114,7 +151,17 @@
             bundleId = "${machine.appNamespace}.twitter";
             url = "https://x.com/";
           };
-          microsoft-edge-mac = prev.callPackage ./src/nix/pkgs/microsoft-edge-mac.nix { };
+          microsoft-edge-mac = prev.callPackage ({
+            stdenvNoCC,
+            fetchurl,
+            xar,
+            cpio,
+            gzip,
+            lib,
+          }:
+            import ./generated/pkgs/microsoft-edge-mac.nix {
+              inherit stdenvNoCC fetchurl xar cpio gzip lib;
+            }) { };
 
           gmail-open = prev.writeShellApplication {
             name = "gmail-open";
@@ -159,8 +206,14 @@
           inherit inputs machine username mkShellEnvironment;
         };
         modules = [
-          ./src/nix/modules/darwin/core.nix
-          ./src/nix/modules/darwin/desktop-apps.nix
+          ({ config, machine, pkgs, username, mkShellEnvironment, ... }:
+            import ./generated/modules/darwin/core.nix {
+              inherit config machine pkgs username mkShellEnvironment;
+            })
+          ({ config, pkgs, ... }:
+            import ./generated/modules/darwin/desktop-apps.nix {
+              inherit config pkgs;
+            })
           home-manager.darwinModules.home-manager
           {
             home-manager.backupFileExtension = "before-origin";

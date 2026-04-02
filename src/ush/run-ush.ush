@@ -1,6 +1,4 @@
-use std::command::exists as command_exists
 use std::env::get_or
-use std::fs::{remove, tmpfile, write_text}
 use std::path::from_source
 use std::string::replace
 
@@ -24,12 +22,6 @@ fn append_arg(current: String, value: String) -> String {
   }
 }
 
-fn write_shell_script(script: String) -> String {
-  let temp_script = tmpfile()
-  write_text(temp_script, script)
-  temp_script
-}
-
 fn main() -> unknown!() {
   let script_name = get_or("RUN_USH_SCRIPT_NAME", "")
   let arg1 = get_or("RUN_USH_ARG1", "")
@@ -38,8 +30,6 @@ fn main() -> unknown!() {
   let arg4 = get_or("RUN_USH_ARG4", "")
   let arg5 = get_or("RUN_USH_ARG5", "")
   let arg6 = get_or("RUN_USH_ARG6", "")
-  let repo_root = from_source("../..").resolve()
-  let target = repo_root.join("src").join("ush").join(script_name)
 
   if script_name == "" {
     fail("RUN_USH_SCRIPT_NAME is required")?
@@ -48,13 +38,8 @@ fn main() -> unknown!() {
     ()
   }
 
-  if target.exists() == false {
-    fail("ush script not found: " + target)?
-  }
-  else {
-    ()
-  }
-
+  let repo_root = from_source("../..").resolve()
+  let script = repo_root.join("_legacy").join("run-ush.sh")
   let forwarded = ""
   let forwarded = append_arg(forwarded, arg1)
   let forwarded = append_arg(forwarded, arg2)
@@ -63,34 +48,12 @@ fn main() -> unknown!() {
   let forwarded = append_arg(forwarded, arg5)
   let forwarded = append_arg(forwarded, arg6)
 
-  let script = """
-    set -eu
-    cd "$REPO_ROOT"
-
-    if command -v ush >/dev/null 2>&1; then
-      if [ -n "$FORWARDED_ARGS" ]; then
-        eval "exec ush $TARGET $FORWARDED_ARGS"
-      else
-        exec ush "$TARGET"
-      fi
-    fi
-
-    if command -v nix >/dev/null 2>&1; then
-      if [ -n "$FORWARDED_ARGS" ]; then
-        eval "exec nix run $FLAKE_REF -- $TARGET $FORWARDED_ARGS"
-      else
-        exec nix run "$FLAKE_REF" -- "$TARGET"
-      fi
-    fi
-
-    printf '%s\n' "ush is not installed and nix is unavailable; run ./_legacy/bootstrap-macos.sh first." >&2
-    exit 1
-  """
-
-  let env_prefix = "REPO_ROOT=" + shell_quote(repo_root) + " FLAKE_REF=" + shell_quote("path:" + repo_root + "#ush") + " TARGET=" + shell_quote(target) + " FORWARDED_ARGS=" + shell_quote(forwarded)
-  let temp_script = write_shell_script(script)
-  shell (env_prefix + " sh " + shell_quote(temp_script))?
-  remove(temp_script)
+  if forwarded == "" {
+    shell ("cd " + shell_quote(repo_root) + " && " + shell_quote(script) + " " + shell_quote(script_name))?
+  }
+  else {
+    shell ("cd " + shell_quote(repo_root) + " && " + shell_quote(script) + " " + shell_quote(script_name) + " " + forwarded)?
+  }
 }
 
 main()?

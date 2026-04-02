@@ -11,7 +11,7 @@
 
 Personal macOS workstation configuration built with Nix, `nix-darwin`, and Home Manager.
 It is intentionally opinionated and optimized for one machine owner, not for safe one-click onboarding by strangers.
-Implementation source now lives under `src/`; typed Nix source-of-truth is under `src/tnix/`, runtime Nix modules and packages are under `src/nix/`, and `.ush` command sources are under `src/ush/`.
+Implementation source now lives under `src/`; typed Nix source-of-truth is under `src/tnix/`, compiled runtime `.nix` outputs are under `generated/`, the remaining handwritten Nix entrypoint is `src/nix/home/default.nix`, and `.ush` command sources are under `src/ush/`.
 
 ## What This Repo Does
 
@@ -82,18 +82,15 @@ Implementation source now lives under `src/`; typed Nix source-of-truth is under
 |   |   |-- types/            # repo-local ambient declarations
 |   |   |-- workspace.tnix    # checked-in workspace entrypoint
 |   |   `-- sync.sh           # compile .tnix -> runtime .nix
-|   |-- nix/                  # runtime Nix modules and package definitions
-|   |   |-- home/
-|   |   |-- machine/
-|   |   |-- modules/
-|   |   `-- pkgs/
+|   |-- nix/
+|   |   `-- home/            # remaining handwritten Home Manager entrypoint
 |   |-- templates/            # tracked helper templates such as machine.local.env.example
 |   `-- ush/                  # source-only .ush implementations
 |-- _legacy/                  # POSIX bootstrap entrypoints and wrappers
 `-- docs/                     # onboarding and operational notes
 ```
 
-Edit `.tnix` under `src/tnix/src/` and run `./src/tnix/sync.sh`; generated runtime files land under `generated/`, and `flake.nix` imports runtime modules from `src/nix/`. Local machine overrides still live at `machine/local.env`, but that directory is created only when `./_legacy/init-machine-config.sh` is run; the tracked example now lives at [src/templates/machine.local.env.example](src/templates/machine.local.env.example).
+Edit `.tnix` under `src/tnix/src/` and run `./src/tnix/sync.sh`; generated runtime files land under `generated/`, and `flake.nix` imports packages, machine config, and darwin modules from there while `src/nix/home/default.nix` remains the handwritten Home Manager entrypoint. Local machine overrides still live at `machine/local.env`, but that directory is created only when `./_legacy/init-machine-config.sh` is run; the tracked example now lives at [src/templates/machine.local.env.example](src/templates/machine.local.env.example).
 
 ## Further Reading
 

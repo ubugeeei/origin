@@ -14,3 +14,4 @@ Current font assets:
 `Nova*.ttf` files are intentionally gitignored so they can stay local to this machine while still being picked up by the font package when present.
 
 The JetBrains Mono Nerd Font Mono variants are tracked here so terminal prompts and UI fallbacks can render Nerd Font glyphs such as folder and Git icons correctly.
+The upstream JetBrains Mono license text is bundled at `assets/fonts/jetbrains-mono-nerd/OFL.txt`.

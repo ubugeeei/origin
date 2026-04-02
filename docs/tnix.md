@@ -8,7 +8,7 @@
 - Load upstream declaration packs through `declarationPacks` instead of copying them into this repo.
 - Keep only project-specific declarations checked in here.
 - Author runtime files under `src/tnix/src/` and compile them into gitignored `generated/*.nix`.
-- Keep runtime Nix modules under `src/nix/` so `flake.nix` can import a stable source tree.
+- Keep typed runtime source under `src/tnix/src/`, compile it into gitignored `generated/`, and leave only minimal handwritten Nix entrypoints where the module system still needs them.
 
 ## Upstream packs now used here
 
@@ -44,7 +44,7 @@ If the real checkout lives somewhere else on a machine, make that path exist wit
 - `src/tnix/src/home/git.tnix` generates `generated/home/git.nix`
 - `src/tnix/src/home/devtools.tnix` generates `generated/home/devtools.nix`
 - runtime compile helpers live in `src/tnix/sync.sh`
-- `flake.nix` and `src/nix/` read those outputs as part of the runtime tree
+- `flake.nix` reads machine config, packages, and darwin modules from `generated/`, while `src/nix/home/default.nix` stays as the handwritten Home Manager entrypoint
 
 Project builds write:
 
@@ -66,5 +66,5 @@ nix run 'path:$HOME/Source/github.com/ubugeeei/tnix#tnix' -- build .
 - No copied `tnix.config.d.tnix` in this repo.
 - No copied ecosystem alias packs in this repo.
 - Upstream pack updates flow in by updating the `tnix` checkout instead of editing duplicate files here.
-- Runtime Nix imports now come from the dedicated `src/nix/` tree instead of being scattered at the repository root.
+- Runtime Nix now comes mostly from `generated/`, with only `src/nix/home/default.nix` left as a handwritten entrypoint.
 - Generated runtime `.nix` artifacts do not need to be hand-edited or tracked.

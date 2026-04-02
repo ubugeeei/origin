@@ -27,8 +27,8 @@ As of March 13, 2026, the official Dia site appears to expose waitlist / invite 
 
 This machine already has `Dia.app` installed and `dia` is already set as the default browser. What remains manual is making that installation reproducible from this repository.
 
-Once Dia publishes a stable macOS download URL, add a custom package similar to `src/nix/pkgs/azookey-mac.nix` or `src/nix/pkgs/microsoft-edge-mac.nix`, then keep using [set-default-browser.sh](../_legacy/set-default-browser.sh) to enforce the browser default.
-That wrapper delegates to `ush` through `_legacy/run-ush.sh` and can fall back to `nix run .#ush`, so it does not have to wait for the login shell switch.
+Once Dia publishes a stable macOS download URL, add a custom package similar to `src/tnix/src/pkgs/azookey-mac.tnix` or `src/tnix/src/pkgs/microsoft-edge-mac.tnix`, then keep using [set-default-browser.sh](../_legacy/set-default-browser.sh) to enforce the browser default.
+That wrapper delegates to `ush` through `_legacy/run-ush.sh` and can fall back to `nix run "path:$PWD#ush"`, so it does not have to wait for the login shell switch.
 If the repo has fresh `.tnix` changes, run `./src/tnix/sync.sh` before the wrapper so the generated runtime `.nix` files are up to date.
 
 ## Vite+ Runtime Notes

@@ -74,4 +74,4 @@ exec env \
   CLONE_SECOND="$second" \
   CLONE_THIRD="$third" \
   CLONE_ALIAS="$alias_name" \
-  "$SCRIPT_DIR/run-ush.sh" clone.ush
+  "$SCRIPT_DIR/clone-real.sh"

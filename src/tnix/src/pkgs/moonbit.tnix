@@ -1,0 +1,47 @@
+let
+  package :: dynamic;
+  # @tnix-ignore
+  package = (args :: {
+    stdenvNoCC :: dynamic;
+    fetchurl :: dynamic;
+    lib :: dynamic;
+  }):
+    let
+      stdenvNoCC = args.stdenvNoCC;
+      fetchurl = args.fetchurl;
+      lib = args.lib;
+    in
+stdenvNoCC.mkDerivation rec {
+  pname = "moonbit";
+  version = "0.1.20260309";
+
+  src = fetchurl {
+    # MoonBit's public macOS download currently resolves through the latest alias.
+    url = "https://cli.moonbitlang.com/binaries/latest/moonbit-darwin-aarch64.tar.gz";
+    hash = "sha256-HVfJDlZjBWqIB2Vfmum96TSqblJKyOAEarCTgxP/6KI=";
+  };
+
+  core = fetchurl {
+    url = "https://cli.moonbitlang.com/cores/core-latest.tar.gz";
+    hash = "sha256-uBzb9dpP+vSIaj+ifL52wLTLxgQNMfJJ+Zp5ENAstlo=";
+  };
+
+  dontConfigure = true;
+  dontBuild = true;
+
+  unpackPhase = builtins.readFile ../../src/templates/nix/pkgs/moonbit/unpack.sh;
+
+  installPhase = builtins.readFile ../../src/templates/nix/pkgs/moonbit/install.sh;
+
+  meta = {
+    description = "MoonBit toolchain for macOS arm64";
+    homepage = "https://www.moonbitlang.com/download/";
+    mainProgram = "moon";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    license = lib.licenses.asl20;
+    platforms = [ "aarch64-darwin" ];
+    maintainers = [ ];
+  };
+};
+in
+package

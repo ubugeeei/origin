@@ -1,0 +1,225 @@
+let
+  module :: DotfilesDarwinModule;
+  # @tnix-ignore
+  module = (args :: DotfilesDarwinModuleArgs):
+let
+  config = args.config;
+  machine = args.machine;
+  pkgs = args.pkgs;
+  username = args.username;
+  mkShellEnvironment = args.mkShellEnvironment;
+  shellEnv = mkShellEnvironment {
+    homeDir = machine.homeDirectory;
+    inherit username;
+  };
+  renderTemplate = path: from: to:
+    builtins.replaceStrings from to (builtins.readFile path);
+  ensureUserToolOwnershipScript =
+    renderTemplate
+      ../../../src/templates/nix/modules/darwin/core/ensure-user-tool-ownership.sh
+      [
+        "@HOME_DIRECTORY@"
+        "@USERNAME@"
+      ]
+      [
+        machine.homeDirectory
+        username
+      ];
+  postActivationScript =
+    renderTemplate
+      ../../../src/templates/nix/modules/darwin/core/post-activation.sh
+      [
+        "@TARGET_SHELL@"
+        "@USERNAME@"
+      ]
+      [
+        shellEnv.loginShell
+        username
+      ];
+in
+{
+  nixpkgs = {
+    config = {
+      allowUnfree = true;
+    };
+  };
+
+  nix = {
+    enable = false;
+  };
+
+  users = {
+    users = builtins.listToAttrs [
+      {
+        name = username;
+        value = {
+          home = machine.homeDirectory;
+          shell = pkgs.ush;
+        };
+      }
+    ];
+  };
+
+  system = {
+    primaryUser = username;
+    defaults = {
+      NSGlobalDomain = builtins.listToAttrs [
+        {
+          name = "ApplePressAndHoldEnabled";
+          value = false;
+        }
+        {
+          name = "InitialKeyRepeat";
+          value = 15;
+        }
+        {
+          name = "KeyRepeat";
+          value = 2;
+        }
+        {
+          name = "com.apple.trackpad.scaling";
+          value = 3.0;
+        }
+      ];
+
+      CustomUserPreferences = builtins.listToAttrs [
+        {
+          name = ".GlobalPreferences";
+          value = builtins.listToAttrs [
+            {
+              name = "com.apple.mouse.scaling";
+              value = 3.0;
+            }
+          ];
+        }
+        {
+          name = "com.apple.assistant.support";
+          value = builtins.listToAttrs [
+            {
+              name = "Assistant Enabled";
+              value = false;
+            }
+          ];
+        }
+        {
+          name = "com.apple.Siri";
+          value = {
+            StatusMenuVisible = false;
+          };
+        }
+        # In common macOS Kotoeri defaults, `3` corresponds to the `．，` style.
+        {
+          name = "com.apple.inputmethod.Kotoeri";
+          value = {
+            JIMPrefPunctuationTypeKey = 3;
+          };
+        }
+      ];
+
+      dock = {
+        autohide = true;
+        show-recents = false;
+        mru-spaces = false;
+      };
+
+      finder = {
+        AppleShowAllExtensions = true;
+        FXEnableExtensionChangeWarning = false;
+        QuitMenuItem = true;
+        ShowPathbar = true;
+        ShowStatusBar = true;
+      };
+    };
+
+    activationScripts = {
+      ensureUserToolOwnership = {
+        text = pkgs.lib.mkAfter ensureUserToolOwnershipScript;
+      };
+
+      postActivation = {
+        text = pkgs.lib.mkAfter postActivationScript;
+      };
+    };
+
+    stateVersion = 6;
+  };
+
+  networking = machine.networking;
+
+  environment = {
+    shells = [
+      pkgs.bashInteractive
+      pkgs.ush
+      pkgs.zsh
+    ];
+
+    userLaunchAgents = builtins.listToAttrs [
+        {
+          name = "org.pqrs.karabiner.agent.karabiner_grabber.plist";
+          value = {
+            enable = pkgs.lib.mkForce false;
+          };
+        }
+        {
+          name = "org.pqrs.karabiner.agent.karabiner_observer.plist";
+          value = {
+            enable = pkgs.lib.mkForce false;
+          };
+        }
+        {
+          name = "org.pqrs.karabiner.karabiner_console_user_server.plist";
+          value = {
+            enable = pkgs.lib.mkForce false;
+          };
+        }
+        {
+          name = "org.pqrs.service.agent.karabiner_console_user_server.plist";
+          value = {
+            source = "${config.services.karabiner-elements.package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents v2.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.karabiner_console_user_server.plist";
+          };
+        }
+      ];
+  };
+
+  fonts = {
+    packages = [ pkgs.nova-font ];
+  };
+
+  security = {
+    pam = {
+      services = {
+        sudo_local = {
+          enable = machine.security.touchIdSudoAuth;
+          touchIdAuth = machine.security.touchIdSudoAuth;
+        };
+      };
+    };
+  };
+
+  launchd = {
+    user = {
+      envVariables = shellEnv.launchdEnvVariables;
+      agents = {
+        ghostty-quick-terminal = {
+          serviceConfig = {
+            ProgramArguments = [
+              "/usr/bin/open"
+              "-gj"
+              "-a"
+              "Ghostty.app"
+            ];
+            RunAtLoad = true;
+          };
+        };
+      };
+    };
+  };
+
+  services = {
+    karabiner-elements = {
+      enable = true;
+    };
+  };
+};
+in
+module

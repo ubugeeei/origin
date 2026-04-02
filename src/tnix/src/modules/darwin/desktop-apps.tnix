@@ -1,0 +1,86 @@
+let
+  module :: DotfilesDesktopAppsModule;
+  # @tnix-ignore
+  module = (args :: DotfilesDesktopAppsModuleArgs):
+let
+  config = args.config;
+  pkgs = args.pkgs;
+  appEnv = pkgs.buildEnv {
+    name = "nix-applications";
+    paths = config.environment.systemPackages;
+    pathsToLink = [ "/Applications" "/Library/Input Methods" ];
+  };
+  exposedApps = [
+    "Discord.app"
+    "Ghostty.app"
+    "Gmail.app"
+    "Google Calendar.app"
+    "Google Chrome.app"
+    "Karabiner-Elements.app"
+    "Microsoft Edge.app"
+    "Obsidian.app"
+    "Raycast.app"
+    "Slack.app"
+    "Spotify.app"
+    "Twitter.app"
+    "Visual Studio Code.app"
+    "Zed.app"
+    "azooKeyMac.app"
+    "zoom.us.app"
+  ];
+  renderTemplate = path: from: to:
+    builtins.replaceStrings from to (builtins.readFile path);
+  allowedAppsArgs = pkgs.lib.concatMapStringsSep " " (app: "'" + app + "'") exposedApps;
+  appEnvPath = builtins.toString appEnv;
+  applicationsScript =
+    renderTemplate
+      ../../../src/templates/nix/modules/darwin/desktop-apps/applications.sh
+      [
+        "@ALLOWED_APPS@"
+        "@APP_ENV@"
+      ]
+      [
+        allowedAppsArgs
+        appEnvPath
+      ];
+  inputMethodsScript =
+    renderTemplate
+      ../../../src/templates/nix/modules/darwin/desktop-apps/input-methods.sh
+      [ "@APP_ENV@" ]
+      [ appEnvPath ];
+in
+{
+  environment = {
+    systemPackages = [
+      pkgs.azookey-mac
+      pkgs.gmail-app
+      pkgs.google-calendar-app
+      pkgs.twitter-app
+      pkgs.microsoft-edge-mac
+      pkgs.raycast
+      pkgs.ghostty-bin
+      pkgs.zed-editor
+      pkgs.vscode
+      pkgs.discord
+      pkgs.google-chrome
+      pkgs.obsidian
+      pkgs.slack
+      pkgs.spotify
+      pkgs.zoom-us
+    ];
+  };
+
+  system = {
+    activationScripts = {
+      applications = {
+        text = pkgs.lib.mkForce applicationsScript;
+      };
+
+      inputMethods = {
+        text = pkgs.lib.mkAfter inputMethodsScript;
+      };
+    };
+  };
+};
+in
+module
