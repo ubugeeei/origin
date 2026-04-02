@@ -18,6 +18,27 @@
       vim.opt.shiftwidth = 2
       vim.opt.tabstop = 2
       vim.opt.smartindent = true
+
+      vim.filetype.add({
+        extension = { tnix = "tnix" },
+        pattern = { [".*%.d%.tnix"] = "tnix" },
+      })
+
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "tnix",
+        callback = function(args)
+          -- Only attach when tnix-lsp is already available on PATH.
+          if vim.fn.executable("tnix-lsp") ~= 1 then
+            return
+          end
+
+          vim.lsp.start({
+            name = "tnix-lsp",
+            cmd = { "tnix-lsp" },
+            root_dir = vim.fs.root(args.buf, { "tnix.config.tnix", "flake.nix", ".git" }) or vim.loop.cwd(),
+          })
+        end,
+      })
     '';
   };
 
@@ -25,6 +46,7 @@
     enable = true;
     extensions = [
       "nix"
+      "tnix"
       "toml"
       "make"
       "dockerfile"
@@ -37,6 +59,9 @@
       buffer_font_fallbacks = [ "JetBrainsMono Nerd Font Mono" ];
       features = {
         edit_prediction_provider = "copilot";
+      };
+      file_types = {
+        tnix = [ "*.d.tnix" ];
       };
       format_on_save = "on";
       relative_line_numbers = true;

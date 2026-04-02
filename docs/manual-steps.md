@@ -49,7 +49,7 @@ That wrapper delegates to `ush` through `_legacy/run-ush.sh` and can fall back t
 - `Control+Option+Right` -> Raycast `Right Half`
 - `Control+Option+Up` -> Raycast `Maximize Width`
 - `Control+Option+Down` -> Raycast `Restore`
-- disable the built-in Mac keyboard while `HHKB-Hybrid_1` is connected
+- disable the built-in Mac keyboard while the Bluetooth `HHKB-Hybrid_1` is connected
 
 This keeps native macOS `Option+Arrow` and `Option+Shift+Arrow` text navigation and selection free for editors and text fields.
 

@@ -50,7 +50,7 @@ print "info login shell -> " + login_shell
 print "info launchd SHELL -> " + launchd_shell
 print "info launchd PATH -> " + launchd_path
 
-let commands = ["nix", "darwin-rebuild", "git", "gh", "glab", "gam", "zed", "ghostty", "ush", "tmux", "codex", "aws", "mise", "vp", "node", "moon", "moonfmt", "moonc", "moonbit-lsp", "cargo", "cargo-clippy", "clippy-driver", "rustc", "rustfmt", "rust-analyzer", "go", "gopls", "gofumpt", "goimports", "golangci-lint", "dlv", "fastfetch", "atuin", "carapace"]
+let commands = ["nix", "darwin-rebuild", "git", "gh", "glab", "gam", "zed", "ghostty", "ush", "chezmoi", "tmux", "codex", "aws", "mise", "vp", "node", "moon", "moonfmt", "moonc", "moonbit-lsp", "cargo", "cargo-clippy", "clippy-driver", "rustc", "rustfmt", "rust-analyzer", "go", "gopls", "gofumpt", "goimports", "golangci-lint", "dlv", "fastfetch", "atuin", "carapace"]
 
 for cmd in commands {
   let path = resolved_command_path(cmd)

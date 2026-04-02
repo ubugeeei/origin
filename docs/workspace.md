@@ -49,6 +49,7 @@ git clone git@gitlab.com:<group>/<repo>.git "$HOME/Source/gitlab.com/<group>/<re
 - primary editor: Zed
 - secondary editor: Neovim
 - shell: `ush` is the default login shell, with zsh still available
+- typed Nix: repo ambient declarations live under `types/`, the checked-in tnix workspace entrypoint is `tnix/workspace.tnix`, Zed enables the `tnix` extension, Neovim auto-attaches `tnix-lsp` when it is on PATH, and current declaration-sourcing limits are noted in `docs/tnix.md`
 - `scripts/` is source-only and now holds the `.ush` implementation for every repo command, while `_legacy/*.sh` keeps shell entrypoints and compatibility wrappers; bootstrap-oriented entrypoints stay POSIX `sh`, and operational helpers such as `apply`, `clone`, `doctor`, `init-repo`, `remove-unused-apple-apps`, `set-default-browser`, and `fetch-github-profile-icon` run through `ush`
 - prompt: starship
 - runtime manager: Vite+ (`vp env`)

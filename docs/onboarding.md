@@ -107,7 +107,7 @@ See [workspace.md](./workspace.md).
 3. Sign in to Raycast, Discord, Slack, Zoom, Spotify, Obsidian, and Chrome.
 4. Sign in to Gmail, Google Calendar, and Twitter from their app launchers in `/Applications`.
 5. Log out and log back in once so azooKey is fully recognized by macOS.
-6. Open Karabiner-Elements once and allow the requested Accessibility / Input Monitoring permissions so the HHKB profile and launcher hotkeys can work.
+6. Open Karabiner-Elements once and allow the requested Accessibility / Input Monitoring permissions so the Bluetooth HHKB profile and launcher hotkeys can work.
 7. Verify `vp` is first in PATH with `vp env doctor`, then run `vp env install` the first time you want a local Node.js runtime downloaded.
 8. Use `vp env pin lts` inside JS projects that should follow the latest LTS release.
 9. Rust and Go are ready after `./_legacy/apply.sh`; `cargo install` targets `~/.cargo/bin` and `go install` targets `~/go/bin`, and both stay on PATH.

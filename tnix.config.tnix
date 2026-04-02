@@ -1,0 +1,7 @@
+{
+  name = "dotfiles";
+  sourceDir = ./tnix;
+  entry = ./tnix/workspace.tnix;
+  declarationDir = ./types;
+  builtins = false;
+}

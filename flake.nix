@@ -72,7 +72,13 @@
             XDG_DATA_HOME = "${homeDir}/.local/share";
             XDG_STATE_HOME = "${homeDir}/.local/state";
           };
-          loginShell = "/run/current-system/sw/bin/ush";
+          loginShell =
+            if builtins.pathExists "/run/current-system/sw/bin/ush" then
+              "/run/current-system/sw/bin/ush"
+            else if builtins.pathExists "${homeDir}/.local/bin/ush" then
+              "${homeDir}/.local/bin/ush"
+            else
+              "/bin/zsh";
         in
         {
           inherit loginShell managedPathEntries sessionVariables workspaceRoot;

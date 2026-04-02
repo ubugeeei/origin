@@ -277,6 +277,7 @@ let
   raycastWindowCommandLauncher = "${homeDir}/.local/bin/launch-raycast-window-command";
   hhkbVendorId = 1278;
   hhkbProductId = 33;
+  hhkbBluetoothAddress = "FB:D5:C8:03:85:A6";
   commonShellAliases = {
     c = "clear";
     cat = "bat";
@@ -303,6 +304,14 @@ let
     t = "tmux attach -t main || tmux new -s main";
     v = "nvim";
     ze = "zed";
+  };
+  ushConfig = builtins.toJSON {
+    shell = {
+      historySize = 1000000;
+      interaction = true;
+      stylishDefault = false;
+    };
+    aliases = commonShellAliases;
   };
   mkKarabinerShellCommandRule =
     {
@@ -398,6 +407,7 @@ let
             disable_built_in_keyboard_if_exists = true;
             fn_function_keys = [ ];
             identifiers = {
+              device_address = hhkbBluetoothAddress;
               is_keyboard = true;
               is_pointing_device = false;
               product_id = hhkbProductId;
@@ -584,14 +594,10 @@ in
     detachKeys = "ctrl-e,e";
   };
 
-  xdg.configFile."ush/config.json".text = builtins.toJSON {
-    shell = {
-      historySize = 1000000;
-      interaction = true;
-      stylishDefault = false;
-    };
-    aliases = commonShellAliases;
-  };
+  xdg.configFile."ush/config.json".text = ushConfig;
+
+  # ush resolves its macOS config via ProjectDirs under Library/Application Support.
+  home.file."Library/Application Support/dev.ubugeeei.ush/config.json".text = ushConfig;
 
   xdg.configFile."ghostty/config".text = ''
     env = XDG_CONFIG_HOME=${homeDir}/.config
@@ -620,6 +626,8 @@ in
   '';
 
   home.file.".config/workstation/shell/terminal-env.sh".text = ''
+    export SHELL="${shellEnv.loginShell}"
+
     prepend_path() {
       case ":''${PATH:-}:" in
         *":$1:"*) ;;

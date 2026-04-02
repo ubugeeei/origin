@@ -1,0 +1,33 @@
+let
+  flake :: DotfilesFlake;
+  flake = import ../flake.nix;
+
+  machine :: DotfilesMachine;
+  machine = import ../machine/default.nix;
+
+  homeModule :: DotfilesHomeModule;
+  homeModule = import ../home/default.nix;
+
+  shellModule :: DotfilesShellModule;
+  shellModule = import ../home/shell.nix;
+
+  editorModule :: DotfilesEditorModule;
+  editorModule = import ../home/editor.nix;
+
+  gitModule :: DotfilesGitModule;
+  gitModule = import ../home/git.nix;
+
+  devtoolsModule :: DotfilesDevtoolsModule;
+  devtoolsModule = import ../home/devtools.nix;
+
+  darwinCoreModule :: DotfilesDarwinModule;
+  darwinCoreModule = import ../modules/darwin/core.nix;
+
+  desktopAppsModule :: DotfilesDesktopAppsModule;
+  desktopAppsModule = import ../modules/darwin/desktop-apps.nix;
+in
+{
+  description = flake.description;
+  host = machine.networking.localHostName;
+  primaryUser = machine.username;
+}

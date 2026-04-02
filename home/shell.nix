@@ -3,6 +3,7 @@
   home.packages = with pkgs; [
     atuin
     carapace
+    chezmoi
     ush
   ];
 
