@@ -4,11 +4,11 @@
   entry = ./src/tnix/workspace.tnix;
   declarationDir = ./src/tnix/types;
   declarationPacks = [
-    ../Source/github.com/ubugeeei/tnix/registry/workspace/builtins.d.tnix
-    ../Source/github.com/ubugeeei/tnix/registry/workspace/tnix.config.d.tnix
-    ../Source/github.com/ubugeeei/tnix/registry/ecosystem/nixpkgs-lib.d.tnix
-    ../Source/github.com/ubugeeei/tnix/registry/ecosystem/nixpkgs-pkgs.d.tnix
-    ../Source/github.com/ubugeeei/tnix/registry/ecosystem/flake-ecosystem.d.tnix
+    ../tnix/registry/workspace/builtins.d.tnix
+    ../tnix/registry/workspace/tnix.config.d.tnix
+    ../tnix/registry/ecosystem/nixpkgs-lib.d.tnix
+    ../tnix/registry/ecosystem/nixpkgs-pkgs.d.tnix
+    ../tnix/registry/ecosystem/flake-ecosystem.d.tnix
   ];
   buildDir = ./generated;
   generatedDeclarationDir = ../.cache/tnix/dotfiles/types;

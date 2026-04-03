@@ -15,7 +15,7 @@ let
       terminalEnvInit = "if [ -f $HOME/.config/workstation/shell/terminal-env.sh ]; then . $HOME/.config/workstation/shell/terminal-env.sh; fi";
 
       runFastfetchOnce :: String;
-      runFastfetchOnce = "set -euo pipefail; [ -t 1 ] || exit 0; [ x$TERM != xdumb ] || exit 0; [ x$TMUX = x ] || exit 0; if ! command -v fastfetch >/dev/null 2>&1; then exit 0; fi; state_root=$(/usr/bin/printenv XDG_STATE_HOME || true); if [ -n $state_root ]; then state_dir=$state_root/workstation; else state_dir=$HOME/.local/state/workstation; fi; sentinel=$state_dir/fastfetch-first-run.done; [ ! -e $sentinel ] || exit 0; mkdir -p $state_dir; if fastfetch; then : > $sentinel; fi";
+      runFastfetchOnce = "set -euo pipefail; [ -t 1 ] || exit 0; current_term=$(/usr/bin/printenv TERM || true); [ \\\"$current_term\\\" != \\\"dumb\\\" ] || exit 0; current_tmux=$(/usr/bin/printenv TMUX || true); [ -z \\\"$current_tmux\\\" ] || exit 0; if ! command -v fastfetch >/dev/null 2>&1; then exit 0; fi; state_root=$(/usr/bin/printenv XDG_STATE_HOME || true); if [ -n \\\"$state_root\\\" ]; then state_dir=\\\"$state_root/workstation\\\"; else state_dir=\\\"$HOME/.local/state/workstation\\\"; fi; sentinel=\\\"$state_dir/fastfetch-first-run.done\\\"; [ ! -e \\\"$sentinel\\\" ] || exit 0; mkdir -p \\\"$state_dir\\\"; if fastfetch; then : > \\\"$sentinel\\\"; fi";
 
       zshInit :: String;
       zshInit = "if [ -f $HOME/.config/workstation/shell/terminal-env.sh ]; then . $HOME/.config/workstation/shell/terminal-env.sh; fi; if command -v run-fastfetch-once >/dev/null 2>&1; then run-fastfetch-once; fi";
@@ -33,6 +33,7 @@ let
         pkgs.atuin
         pkgs.carapace
         pkgs.chezmoi
+        pkgs.fastfetch
         pkgs.ush
         runFastfetchOnceScript
       ];

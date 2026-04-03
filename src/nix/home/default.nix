@@ -313,6 +313,28 @@ let
     };
     aliases = commonShellAliases;
   };
+  ghosttyConfig = ''
+    command = ${shellEnv.loginShell}
+    env = XDG_CONFIG_HOME=${homeDir}/.config
+    env = XDG_CACHE_HOME=${homeDir}/.cache
+    env = XDG_DATA_HOME=${homeDir}/.local/share
+    env = XDG_STATE_HOME=${homeDir}/.local/state
+    font-family = Menlo
+    font-family = "JetBrainsMono Nerd Font Mono"
+    font-size = 15
+    keybind = global:shift+space=toggle_quick_terminal
+    keybind = shift+enter=text:\x1b\r
+    macos-option-as-alt = true
+    quick-terminal-animation-duration = 0
+    quick-terminal-position = left
+    quick-terminal-screen = main
+    quick-terminal-size = 50%
+    shell-integration = detect
+    theme = "GitHub Dark High Contrast"
+    window-inherit-working-directory = true
+    window-padding-x = 12
+    window-padding-y = 12
+  '';
   mkKarabinerShellCommandRule =
     {
       description,
@@ -471,7 +493,6 @@ in
     jq
     just
     lazydocker
-    fastfetch
     ripgrep
     moonbit
     fd
@@ -607,25 +628,14 @@ in
   # ush resolves its macOS config via ProjectDirs under Library/Application Support.
   home.file."Library/Application Support/dev.ubugeeei.ush/config.json".text = ushConfig;
 
-  xdg.configFile."ghostty/config".text = ''
-    env = XDG_CONFIG_HOME=${homeDir}/.config
-    env = XDG_CACHE_HOME=${homeDir}/.cache
-    env = XDG_DATA_HOME=${homeDir}/.local/share
-    env = XDG_STATE_HOME=${homeDir}/.local/state
-    font-family = Menlo
-    font-family = "JetBrainsMono Nerd Font Mono"
-    font-size = 15
-    keybind = global:shift+space=toggle_quick_terminal
-    macos-option-as-alt = true
-    quick-terminal-animation-duration = 0
-    quick-terminal-position = left
-    quick-terminal-screen = main
-    quick-terminal-size = 50%
-    shell-integration = detect
-    theme = "GitHub Dark High Contrast"
-    window-padding-x = 12
-    window-padding-y = 12
-  '';
+  xdg.configFile."ghostty/config".text = ghosttyConfig;
+
+  # Ghostty on macOS also looks under Application Support when XDG variables
+  # are not yet present in the app launch environment.
+  home.file."Library/Application Support/com.mitchellh.ghostty/config" = {
+    force = true;
+    text = ghosttyConfig;
+  };
 
   xdg.configFile."karabiner/karabiner.json".text = karabinerConfig;
 
