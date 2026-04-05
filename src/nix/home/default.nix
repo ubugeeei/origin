@@ -519,6 +519,7 @@ in
     rust-analyzer
     xh
     yq-go
+    zig
     rustc
     rustfmt
   ];

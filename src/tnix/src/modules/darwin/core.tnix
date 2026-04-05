@@ -114,6 +114,15 @@ in
             JIMPrefPunctuationTypeKey = 3;
           };
         }
+        {
+          name = "dev.ensan.inputmethod.azooKeyMac";
+          value = builtins.listToAttrs [
+            {
+              name = "dev.ensan.inputmethod.azooKeyMac.preference.typeHalfSpace";
+              value = true;
+            }
+          ];
+        }
       ];
 
       dock = {
