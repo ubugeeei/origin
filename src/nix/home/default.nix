@@ -609,6 +609,8 @@ in
 
   xdg.enable = true;
 
+  home.file."${config.xdg.configHome}/starship.toml".force = true;
+
   xdg.configFile."ghq/config.yml".text = ''
     root: ${workspaceRoot}
   '';

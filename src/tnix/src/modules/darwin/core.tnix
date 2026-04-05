@@ -156,6 +156,10 @@ in
   networking = machine.networking;
 
   environment = {
+    systemPackages = [
+      pkgs.ush
+    ];
+
     shells = [
       pkgs.bashInteractive
       pkgs.ush

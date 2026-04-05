@@ -72,13 +72,7 @@
             XDG_DATA_HOME = "${homeDir}/.local/share";
             XDG_STATE_HOME = "${homeDir}/.local/state";
           };
-          loginShell =
-            if builtins.pathExists "/run/current-system/sw/bin/ush" then
-              "/run/current-system/sw/bin/ush"
-            else if builtins.pathExists "${homeDir}/.local/bin/ush" then
-              "${homeDir}/.local/bin/ush"
-            else
-              "/bin/zsh";
+          loginShell = "/run/current-system/sw/bin/ush";
         in
         {
           inherit loginShell managedPathEntries sessionVariables workspaceRoot;
@@ -216,7 +210,21 @@
             })
           home-manager.darwinModules.home-manager
           {
-            home-manager.backupFileExtension = "before-origin";
+            home-manager.backupCommand = pkgs.writeShellScript "home-manager-backup-existing" ''
+              set -eu
+
+              target="$1"
+              stamp="$(/bin/date +%Y%m%d-%H%M%S)"
+              backup="$target.before-origin.$stamp"
+              index=0
+
+              while [ -e "$backup" ]; do
+                index=$((index + 1))
+                backup="$target.before-origin.$stamp.$index"
+              done
+
+              mv "$target" "$backup"
+            '';
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = {
