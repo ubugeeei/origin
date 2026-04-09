@@ -305,13 +305,18 @@ let
     v = "nvim";
     ze = "zed";
   };
+  ushShellAliases = builtins.removeAttrs commonShellAliases [
+    "g"
+    "gm"
+    "gam"
+  ];
   ushConfig = builtins.toJSON {
     shell = {
       historySize = 1000000;
       interaction = true;
       stylishDefault = false;
     };
-    aliases = commonShellAliases;
+    aliases = ushShellAliases;
   };
   ghosttyConfig = ''
     command = ${shellEnv.loginShell}
@@ -726,6 +731,30 @@ in
   home.file.".local/bin/clone" = {
     executable = true;
     text = cloneScriptText;
+  };
+
+  home.file.".local/bin/g" = {
+    executable = true;
+    text = ''
+      #!${pkgs.bash}/bin/bash
+      exec ${pkgs.git}/bin/git "$@"
+    '';
+  };
+
+  home.file.".local/bin/gm" = {
+    executable = true;
+    text = ''
+      #!${pkgs.bash}/bin/bash
+      exec ${pkgs.git}/bin/git gm "$@"
+    '';
+  };
+
+  home.file.".local/bin/gam" = {
+    executable = true;
+    text = ''
+      #!${pkgs.bash}/bin/bash
+      exec ${pkgs.git}/bin/git gam "$@"
+    '';
   };
 
   home.file.".zprofile".text = ''

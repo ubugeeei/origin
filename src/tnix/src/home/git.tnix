@@ -8,6 +8,15 @@ let
       machine :: DotfilesMachine;
       machine = args.machine;
 
+      envOr :: String -> String -> String;
+      envOr = name: (fallback:
+        let
+          value :: String;
+          # @tnix-ignore
+          value = builtins.getEnv name;
+        in
+        if builtins.lessThan 0 (builtins.stringLength value) then value else fallback);
+
       hasGitUserName :: Bool;
       hasGitUserName = if builtins.isNull machine.git.userName then false else true;
 
@@ -22,6 +31,9 @@ let
 
       hasGitGpgFormat :: Bool;
       hasGitGpgFormat = if builtins.isNull machine.git.gpgFormat then false else true;
+
+      globalIgnoreUserName :: String;
+      globalIgnoreUserName = envOr "ORIGIN_GITHUB_USER" (envOr "ORIGIN_GIT_USER_NAME" machine.username);
 
       userSettings :: dynamic;
       userSettings =
@@ -134,6 +146,8 @@ let
             ".DS_Store"
             ".direnv"
             ".envrc.local"
+            "__${globalIgnoreUserName}__"
+            "__agent_only"
           ];
         };
 
