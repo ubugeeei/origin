@@ -17,21 +17,42 @@ let
       hasGitHubUser :: Bool;
       hasGitHubUser = if builtins.isNull machine.git.githubUser then false else true;
 
-      identitySettings :: dynamic;
-      identitySettings =
+      hasGitSigningKey :: Bool;
+      hasGitSigningKey = if builtins.isNull machine.git.signingKey then false else true;
+
+      hasGitGpgFormat :: Bool;
+      hasGitGpgFormat = if builtins.isNull machine.git.gpgFormat then false else true;
+
+      userSettings :: dynamic;
+      userSettings =
         (lib.optionalAttrs hasGitUserName {
-          user = {
-            name = machine.git.userName;
-          };
+          name = machine.git.userName;
         })
         // (lib.optionalAttrs hasGitUserEmail {
-          user = {
-            email = machine.git.userEmail;
-          };
+          email = machine.git.userEmail;
+        })
+        // (lib.optionalAttrs hasGitSigningKey {
+          signingKey = machine.git.signingKey;
+        });
+
+      machineSettings :: dynamic;
+      machineSettings =
+        (lib.optionalAttrs true {
+          user = userSettings;
         })
         // (lib.optionalAttrs hasGitHubUser {
           github = {
             user = machine.git.githubUser;
+          };
+        })
+        // (lib.optionalAttrs hasGitSigningKey {
+          commit = {
+            gpgSign = true;
+          };
+        })
+        // (lib.optionalAttrs hasGitGpgFormat {
+          gpg = {
+            format = machine.git.gpgFormat;
           };
         });
     in
@@ -49,7 +70,7 @@ let
 
         git = {
           enable = true;
-          settings = identitySettings // {
+          settings = machineSettings // {
             alias = {
               ap = "add -p";
               ds = "diff --staged";

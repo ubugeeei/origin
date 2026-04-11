@@ -16,6 +16,8 @@ type DotfilesMachine = {
     userName :: String | Null;
     userEmail :: String | Null;
     githubUser :: String | Null;
+    signingKey :: String | Null;
+    gpgFormat :: String | Null;
   };
   security :: {
     touchIdSudoAuth :: Bool;

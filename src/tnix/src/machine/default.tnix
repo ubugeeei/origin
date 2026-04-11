@@ -71,6 +71,8 @@ in
     userName = optionalEnv "ORIGIN_GIT_USER_NAME";
     userEmail = optionalEnv "ORIGIN_GIT_USER_EMAIL";
     githubUser = optionalEnv "ORIGIN_GITHUB_USER";
+    signingKey = optionalEnv "ORIGIN_GIT_SIGNING_KEY";
+    gpgFormat = optionalEnv "ORIGIN_GIT_GPG_FORMAT";
   };
 
   security = {

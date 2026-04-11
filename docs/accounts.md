@@ -4,11 +4,27 @@
 
 Before your first commit, make sure `ORIGIN_GIT_USER_NAME`, `ORIGIN_GIT_USER_EMAIL`, and `ORIGIN_GITHUB_USER` are correct in `machine/local.env`.
 
+If you want signed commits, set `ORIGIN_GIT_SIGNING_KEY` in `machine/local.env`. When this value is present, this repo configures `user.signingKey` and turns on `commit.gpgSign`.
+
+For OpenPGP signing, use your key id or fingerprint:
+
+```bash
+ORIGIN_GIT_SIGNING_KEY='1A171B2D7721608A'
+```
+
+For SSH signing, use the public key path and set Git's signing format:
+
+```bash
+ORIGIN_GIT_SIGNING_KEY='~/.ssh/id_ed25519.pub'
+ORIGIN_GIT_GPG_FORMAT='ssh'
+```
+
 Git behavior in this setup:
 
 - GitHub and GitLab URLs are rewritten to SSH automatically.
 - `gh` uses SSH.
 - `glab` uses SSH.
+- signed commits are enabled when `ORIGIN_GIT_SIGNING_KEY` is set.
 - SSH config includes host entries for GitHub and GitLab.
 
 Relevant repo config:

@@ -50,6 +50,8 @@ origin_host_name=$(scutil --get HostName 2>/dev/null || printf '%s\n' "$origin_l
 origin_git_user_name=$(git config --global user.name 2>/dev/null || true)
 origin_git_user_email=$(git config --global user.email 2>/dev/null || true)
 origin_github_user=$(git config --global github.user 2>/dev/null || true)
+origin_git_signing_key=$(git config --global user.signingkey 2>/dev/null || true)
+origin_git_gpg_format=$(git config --global gpg.format 2>/dev/null || true)
 
 mkdir -p "$ROOT/machine"
 
@@ -70,6 +72,8 @@ ORIGIN_LOCAL_HOSTNAME=$(quote_sh "$origin_local_host_name")
 ORIGIN_GIT_USER_NAME=$(quote_sh "$origin_git_user_name")
 ORIGIN_GIT_USER_EMAIL=$(quote_sh "$origin_git_user_email")
 ORIGIN_GITHUB_USER=$(quote_sh "$origin_github_user")
+ORIGIN_GIT_SIGNING_KEY=$(quote_sh "$origin_git_signing_key")
+ORIGIN_GIT_GPG_FORMAT=$(quote_sh "$origin_git_gpg_format")
 
 # Optional bundle identifier namespace for generated Chrome app wrappers.
 # ORIGIN_APP_NAMESPACE='dev.origin'

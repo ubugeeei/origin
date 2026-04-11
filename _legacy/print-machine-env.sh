@@ -5,7 +5,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 script_name=$(basename "$0")
 script_name=${script_name%.sh}
 mode=tsv
-allowed_key_pattern='ORIGIN_(SYSTEM|USERNAME|HOME|WORKSPACE_ROOT|COMPUTER_NAME|HOSTNAME|LOCAL_HOSTNAME|GIT_USER_NAME|GIT_USER_EMAIL|GITHUB_USER|APP_NAMESPACE|TOUCH_ID_SUDO_AUTH)'
+allowed_key_pattern='ORIGIN_(SYSTEM|USERNAME|HOME|WORKSPACE_ROOT|COMPUTER_NAME|HOSTNAME|LOCAL_HOSTNAME|GIT_USER_NAME|GIT_USER_EMAIL|GITHUB_USER|GIT_SIGNING_KEY|GIT_GPG_FORMAT|APP_NAMESPACE|TOUCH_ID_SUDO_AUTH)'
 
 if [ "${1-}" = "--export" ]; then
   mode=export
@@ -69,6 +69,8 @@ ORIGIN_HOSTNAME=$(scutil --get HostName 2>/dev/null || printf '%s\n' "$ORIGIN_LO
 ORIGIN_GIT_USER_NAME=$(git config --global user.name 2>/dev/null || true)
 ORIGIN_GIT_USER_EMAIL=$(git config --global user.email 2>/dev/null || true)
 ORIGIN_GITHUB_USER=$(git config --global github.user 2>/dev/null || true)
+ORIGIN_GIT_SIGNING_KEY=$(git config --global user.signingkey 2>/dev/null || true)
+ORIGIN_GIT_GPG_FORMAT=$(git config --global gpg.format 2>/dev/null || true)
 ORIGIN_APP_NAMESPACE="dev.origin"
 ORIGIN_TOUCH_ID_SUDO_AUTH="false"
 
@@ -109,5 +111,7 @@ emit ORIGIN_LOCAL_HOSTNAME "$ORIGIN_LOCAL_HOSTNAME"
 emit ORIGIN_GIT_USER_NAME "$ORIGIN_GIT_USER_NAME"
 emit ORIGIN_GIT_USER_EMAIL "$ORIGIN_GIT_USER_EMAIL"
 emit ORIGIN_GITHUB_USER "$ORIGIN_GITHUB_USER"
+emit ORIGIN_GIT_SIGNING_KEY "$ORIGIN_GIT_SIGNING_KEY"
+emit ORIGIN_GIT_GPG_FORMAT "$ORIGIN_GIT_GPG_FORMAT"
 emit ORIGIN_APP_NAMESPACE "$ORIGIN_APP_NAMESPACE"
 emit ORIGIN_TOUCH_ID_SUDO_AUTH "$ORIGIN_TOUCH_ID_SUDO_AUTH"

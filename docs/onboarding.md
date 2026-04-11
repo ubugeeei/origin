@@ -100,7 +100,7 @@ Repository script policy:
 
 Notes:
 
-- `machine/local.env` is gitignored and is the intended place for per-Mac values such as username, home directory, computer name, workspace root, and Git identity.
+- `machine/local.env` is gitignored and is the intended place for per-Mac values such as username, home directory, computer name, workspace root, Git identity, and Git signing key.
 - [src/templates/machine.local.env.example](../src/templates/machine.local.env.example) shows the supported variables if you want to inspect the shape before generating the local file.
 - The `machine/` directory is not tracked anymore; `_legacy/init-machine-config.sh` creates it only when you actually generate `machine/local.env`.
 - If `machine/local.env` is missing, `_legacy/bootstrap-macos.sh` and `_legacy/apply.sh` derive values from the current Mac at runtime.
@@ -124,7 +124,7 @@ See [workspace.md](./workspace.md).
 
 ## What To Tweak First
 
-1. Check the Git identity values in `machine/local.env`.
+1. Check the Git identity and signing values in `machine/local.env`.
 2. Finish SSH key setup and GitHub/GitLab auth.
 3. Sign in to Raycast, Discord, Slack, Zoom, Spotify, Obsidian, and Chrome.
 4. Sign in to Gmail, Google Calendar, and Twitter from their app launchers in `/Applications`.
