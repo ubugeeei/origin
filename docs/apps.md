@@ -11,6 +11,7 @@ Status as of March 13, 2026.
 - Zed
 - VS Code
 - Discord
+- Firefox
 - Google Chrome
 - Microsoft Edge
 - Gmail

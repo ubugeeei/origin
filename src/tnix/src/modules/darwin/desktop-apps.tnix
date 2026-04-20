@@ -12,6 +12,7 @@ let
   };
   exposedApps = [
     "Discord.app"
+    "Firefox.app"
     "Ghostty.app"
     "Gmail.app"
     "Google Calendar.app"
@@ -62,6 +63,7 @@ in
       pkgs.zed-editor
       pkgs.vscode
       pkgs.discord
+      pkgs.firefox
       pkgs.google-chrome
       pkgs.obsidian
       pkgs.slack

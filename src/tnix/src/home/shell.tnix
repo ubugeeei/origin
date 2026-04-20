@@ -99,7 +99,8 @@ let
 
             git_branch = {
               style = "cyan";
-              format = " [$branch]($style)";
+              symbol = "|- ";
+              format = " [$symbol$branch]($style)";
             };
 
             git_status = {

@@ -685,6 +685,19 @@ in
     fi
   '';
 
+  home.file.".local/bin/ush" = {
+    executable = true;
+    force = true;
+    text = ''
+      #!${pkgs.bash}/bin/bash
+      local_ush="$HOME/Code/github.com/ubugeeei/ush/target/release/ush"
+      if [ -x "$local_ush" ]; then
+        exec "$local_ush" "$@"
+      fi
+      exec ${pkgs.ush}/bin/ush "$@"
+    '';
+  };
+
   home.file.".local/bin/zed" = {
     executable = true;
     text = ''
