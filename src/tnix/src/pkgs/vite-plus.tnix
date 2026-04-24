@@ -20,13 +20,13 @@ let
 
   integrityHash =
     if builtins.elem packageName [ "darwin-arm64" ] then
-      "sha512-YGKHyehGe0aWnaPQfGMRzQrhmRzBKZ53rNMwvTekk7qajRZlfp+tlOeDZLRfJVFubP26pmjPg8drV25oRd5HUQ=="
+      "sha512-fvUbACZr+g7ptha2MnkWKAsMd3vn4edBA1O556+p5ddkb//YcmXOKrxErUsSfaE0V45A8yKZm+pmLXQiRYUCpQ=="
     else
-      "sha512-hUOBVbs8LGHRX0KkUiSYKfWUpUXXN3EB+aGKbT41sLh/E+KYP4V3ybHhLB70xxZsCXHbVL9XQ0dw10fMfDO1uA==";
+      "sha512-RCah51wPRqMWDKvIx7KDDf5npW/x/xEgKRNctukk9QKFphVtRs8ay52VwWX+jFdJMN+u+aGnMX8Y0smMUbYSUw==";
 in
 stdenvNoCC.mkDerivation rec {
   pname = "vite-plus";
-  version = "0.1.11";
+  version = "0.1.19";
 
   src = fetchurl {
     url = "https://registry.npmjs.org/@voidzero-dev/vite-plus-cli-${packageName}/-/vite-plus-cli-${packageName}-${version}.tgz";

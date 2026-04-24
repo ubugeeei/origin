@@ -1,3 +1,4 @@
+use std::env::get_or
 use std::path::from_source
 use std::string::replace
 
@@ -5,10 +6,41 @@ fn shell_quote(value: String) -> String {
   "'" + replace(value, "'", "'\"'\"'") + "'"
 }
 
+fn append_arg(current: String, value: String) -> String {
+  if value == "" {
+    current
+  }
+  else if current == "" {
+    shell_quote(value)
+  }
+  else {
+    current + " " + shell_quote(value)
+  }
+}
+
 fn main() -> unknown!() {
   let repo_root = from_source("../..").resolve()
   let script = repo_root.join("_legacy").join("clone.sh")
-  shell ("cd " + shell_quote(repo_root) + " && " + shell_quote(script))?
+  let arg1 = get_or("RUN_USH_ARG1", "")
+  let arg2 = get_or("RUN_USH_ARG2", "")
+  let arg3 = get_or("RUN_USH_ARG3", "")
+  let arg4 = get_or("RUN_USH_ARG4", "")
+  let arg5 = get_or("RUN_USH_ARG5", "")
+  let arg6 = get_or("RUN_USH_ARG6", "")
+  let forwarded = ""
+  let forwarded = append_arg(forwarded, arg1)
+  let forwarded = append_arg(forwarded, arg2)
+  let forwarded = append_arg(forwarded, arg3)
+  let forwarded = append_arg(forwarded, arg4)
+  let forwarded = append_arg(forwarded, arg5)
+  let forwarded = append_arg(forwarded, arg6)
+
+  if forwarded == "" {
+    shell ("cd " + shell_quote(repo_root) + " && " + shell_quote(script))?
+  }
+  else {
+    shell ("cd " + shell_quote(repo_root) + " && " + shell_quote(script) + " " + forwarded)?
+  }
 }
 
 main()?
