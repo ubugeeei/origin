@@ -13,17 +13,17 @@ let
     in
 stdenvNoCC.mkDerivation rec {
   pname = "moonbit";
-  version = "0.1.20260309";
+  version = "0.1.20260512";
 
   src = fetchurl {
     # MoonBit's public macOS download currently resolves through the latest alias.
     url = "https://cli.moonbitlang.com/binaries/latest/moonbit-darwin-aarch64.tar.gz";
-    hash = "sha256-HVfJDlZjBWqIB2Vfmum96TSqblJKyOAEarCTgxP/6KI=";
+    hash = "sha256-5OtkpeuCcOi8YoJVVEOMMlVm5kHHCJ4vO/Vk6RhDMbk=";
   };
 
   core = fetchurl {
     url = "https://cli.moonbitlang.com/cores/core-latest.tar.gz";
-    hash = "sha256-uBzb9dpP+vSIaj+ifL52wLTLxgQNMfJJ+Zp5ENAstlo=";
+    hash = "sha256-xoulYgG9jZnbRCtt9ZnCwhewUo7ex9bebocbblicUC4=";
   };
 
   dontConfigure = true;

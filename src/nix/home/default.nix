@@ -310,16 +310,23 @@ let
     "gm"
     "gam"
   ];
+  ushRc = ''
+    if [ -f "$HOME/.config/workstation/shell/terminal-env.sh" ]; then
+      . "$HOME/.config/workstation/shell/terminal-env.sh"
+    fi
+  '';
+  interactiveUshPath = "${homeDir}/.local/bin/ush";
   ushConfig = builtins.toJSON {
     shell = {
       historySize = 1000000;
       interaction = true;
+      rcFiles = [ "rc.sh" ];
       stylishDefault = false;
     };
     aliases = ushShellAliases;
   };
   ghosttyConfig = ''
-    command = ${shellEnv.loginShell}
+    command = ${interactiveUshPath}
     env = XDG_CONFIG_HOME=${homeDir}/.config
     env = XDG_CACHE_HOME=${homeDir}/.cache
     env = XDG_DATA_HOME=${homeDir}/.local/share
@@ -632,9 +639,11 @@ in
   };
 
   xdg.configFile."ush/config.json".text = ushConfig;
+  xdg.configFile."ush/rc.sh".text = ushRc;
 
   # ush resolves its macOS config via ProjectDirs under Library/Application Support.
   home.file."Library/Application Support/dev.ubugeeei.ush/config.json".text = ushConfig;
+  home.file."Library/Application Support/dev.ubugeeei.ush/rc.sh".text = ushRc;
 
   xdg.configFile."ghostty/config".text = ghosttyConfig;
 
@@ -652,7 +661,7 @@ in
   '';
 
   home.file.".config/workstation/shell/terminal-env.sh".text = ''
-    export SHELL="${shellEnv.loginShell}"
+    export SHELL="${interactiveUshPath}"
 
     prepend_path() {
       case ":''${PATH:-}:" in
@@ -690,6 +699,10 @@ in
     force = true;
     text = ''
       #!${pkgs.bash}/bin/bash
+      terminal_env="$HOME/.config/workstation/shell/terminal-env.sh"
+      if [ -f "$terminal_env" ]; then
+        . "$terminal_env"
+      fi
       local_ush="$HOME/Code/github.com/ubugeeei/ush/target/release/ush"
       if [ -x "$local_ush" ]; then
         exec "$local_ush" "$@"
