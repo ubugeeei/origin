@@ -12,6 +12,13 @@ fi
 
 shift
 
+arg1=${1:-}
+arg2=${2:-}
+arg3=${3:-}
+arg4=${4:-}
+arg5=${5:-}
+arg6=${6:-}
+
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repo_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
 target="$repo_root/src/ush/$script_name"
@@ -24,12 +31,28 @@ fi
 cd "$repo_root"
 
 if command -v ush >/dev/null 2>&1; then
-  exec ush "$target" "$@"
+  exec env \
+    RUN_USH_SCRIPT_NAME="$script_name" \
+    RUN_USH_ARG1="$arg1" \
+    RUN_USH_ARG2="$arg2" \
+    RUN_USH_ARG3="$arg3" \
+    RUN_USH_ARG4="$arg4" \
+    RUN_USH_ARG5="$arg5" \
+    RUN_USH_ARG6="$arg6" \
+    ush "$target" "$@"
 fi
 
 if command -v nix >/dev/null 2>&1; then
   "$repo_root/src/tnix/sync.sh"
-  exec nix run "path:$repo_root#ush" -- "$target" "$@"
+  exec env \
+    RUN_USH_SCRIPT_NAME="$script_name" \
+    RUN_USH_ARG1="$arg1" \
+    RUN_USH_ARG2="$arg2" \
+    RUN_USH_ARG3="$arg3" \
+    RUN_USH_ARG4="$arg4" \
+    RUN_USH_ARG5="$arg5" \
+    RUN_USH_ARG6="$arg6" \
+    nix run "path:$repo_root#ush" -- "$target" "$@"
 fi
 
 printf '%s\n' "ush is not installed and nix is unavailable; run ./_legacy/bootstrap-macos.sh first." >&2

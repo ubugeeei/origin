@@ -701,6 +701,9 @@ in
       #!${pkgs.bash}/bin/bash
       terminal_env="$HOME/.config/workstation/shell/terminal-env.sh"
       if [ -f "$terminal_env" ]; then
+        # Ensure managed PATH entries such as ~/.local/bin are available even
+        # when ush is launched from a sparse GUI/app environment.
+        # shellcheck disable=SC1090
         . "$terminal_env"
       fi
       local_ush="$HOME/Code/github.com/ubugeeei/ush/target/release/ush"
