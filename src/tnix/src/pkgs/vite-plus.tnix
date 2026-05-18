@@ -10,19 +10,106 @@ let
   stdenvNoCC = args.stdenvNoCC;
   fetchurl = args.fetchurl;
   lib = args.lib;
-  packageName =
-    if builtins.elem stdenvNoCC.hostPlatform.system [ "aarch64-darwin" ] then
-      "darwin-arm64"
-    else if builtins.elem stdenvNoCC.hostPlatform.system [ "x86_64-darwin" ] then
-      "darwin-x64"
-    else
-      throw "vite-plus is only packaged for macOS";
+  platform = stdenvNoCC.hostPlatform;
 
-  integrityHash =
-    if builtins.elem packageName [ "darwin-arm64" ] then
-      "sha512-bfZWaGVNT5CxiBbK5cZnb3hJoNhFHXBBqc4FNT61WQ01Ox82lNaADEM1LVUd1kOwynYgaXBFFyN6VAWIOlKUdQ=="
+  macPackages = {
+    aarch64 = {
+      packageName = "darwin-arm64";
+      hash = "sha512-bfZWaGVNT5CxiBbK5cZnb3hJoNhFHXBBqc4FNT61WQ01Ox82lNaADEM1LVUd1kOwynYgaXBFFyN6VAWIOlKUdQ==";
+    };
+    x86_64 = {
+      packageName = "darwin-x64";
+      hash = "sha512-MXYeNjmltkSCp9kTX5TaX4+Sv4TCZQQFL29tCD+P0t54fu7fLTCW6rWeuLsrDueL+bh3ZGNubwJKuyAllyDnKg==";
+    };
+  };
+
+  linuxPackages = {
+    aarch64 = {
+      gnu = {
+        packageName = "linux-arm64-gnu";
+        hash = "sha512-wHJoQ56eGnE7kAJlloHOnX+y66CLeWUs93ZsLSpele5GjbfmhADUrPv5H4W8iGDmx4sMZ3s8qJM2PzOTBdYWsw==";
+      };
+      musl = {
+        packageName = "linux-arm64-musl";
+        hash = "sha512-tP5wJHb9WqvOzkPHNmTeahJqYXjfiZodLwii79+LjpWk1eRj85t8P6YeiLeXTc50KxMMsFArqeVfvKCx6tvJZA==";
+      };
+    };
+    x86_64 = {
+      gnu = {
+        packageName = "linux-x64-gnu";
+        hash = "sha512-JeWhHCvsgSlZbX3oo88QvaO0rWkHdEGLSdT87NbBwtDaqjheUqkApbbasgTGQHAaTvlYKntWnK2yGvgOdlDLAg==";
+      };
+      musl = {
+        packageName = "linux-x64-musl";
+        hash = "sha512-BDFow0FvGYZgJbVhyGbvSMHMrESS1BYDE8AWDB92bpPQpvO83sR6O8nDGki7ZY3WuGak7gf25CLm3jw6Gu6p+g==";
+      };
+    };
+  };
+
+  winPackages = {
+    aarch64 = {
+      packageName = "win32-arm64-msvc";
+      hash = "sha512-MBsFpvOjB9LUvxZ2D0GYicO7QORZRFTH3VatdMBK/XKyhHUfgp8sKOBExJDVx+No/EqOQHEC8Y6BkulRk1pEWg==";
+    };
+    x86_64 = {
+      packageName = "win32-x64-msvc";
+      hash = "sha512-gGTF9Hh0nKAlkoU9F02s/C/ppgMUHNjTe7NxM0kbee+w8fDqFTvwUvR5UH8a5j9Fch/e343+eSsllvPN4dTqUg==";
+    };
+  };
+
+  linuxPackageForArch =
+    if platform.isAarch64 then
+      linuxPackages.aarch64
+    else if platform.isx86_64 then
+      linuxPackages.x86_64
     else
-      "sha512-MXYeNjmltkSCp9kTX5TaX4+Sv4TCZQQFL29tCD+P0t54fu7fLTCW6rWeuLsrDueL+bh3ZGNubwJKuyAllyDnKg==";
+      null;
+
+  linuxPackage =
+    if builtins.isNull linuxPackageForArch then
+      null
+    else if platform.isMusl then
+      linuxPackageForArch.musl
+    else
+      linuxPackageForArch.gnu;
+
+  packageInfo =
+    if platform.isDarwin then
+      if platform.isAarch64 then
+        macPackages.aarch64
+      else if platform.isx86_64 then
+        macPackages.x86_64
+      else
+        null
+    else if platform.isLinux then
+      linuxPackage
+    else if platform.isWindows then
+      if platform.isAarch64 then
+        winPackages.aarch64
+      else if platform.isx86_64 then
+        winPackages.x86_64
+      else
+        null
+    else
+      null;
+
+  selectedPackage =
+    if builtins.isNull packageInfo then
+      throw "vite-plus is not packaged for ${platform.system}"
+    else
+      packageInfo;
+
+  packageName = selectedPackage.packageName;
+  integrityHash = selectedPackage.hash;
+
+  supportedPlatforms = [
+    "aarch64-darwin"
+    "x86_64-darwin"
+    "aarch64-linux"
+    "x86_64-linux"
+    "aarch64-windows"
+    "x86_64-windows"
+  ];
 in
 stdenvNoCC.mkDerivation rec {
   pname = "vite-plus";
@@ -41,14 +128,11 @@ stdenvNoCC.mkDerivation rec {
   installPhase = builtins.readFile ../../src/templates/nix/pkgs/vite-plus/install.sh;
 
   meta = {
-    description = "Vite+ global CLI for macOS";
+    description = "Vite+ global CLI";
     homepage = "https://viteplus.dev/";
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     license = lib.licenses.mit;
-    platforms = [
-      "aarch64-darwin"
-      "x86_64-darwin"
-    ];
+    platforms = supportedPlatforms;
     maintainers = [ ];
   };
 };

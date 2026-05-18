@@ -56,7 +56,7 @@ These are exposed directly into `/Applications` after `darwin-rebuild switch`.
 - `ghostty` is installed from `ghostty-bin`.
 - `microsoft-edge` is custom-packaged in this repo from Microsoft's macOS pkg.
 - `azooKey` is now custom-packaged in this repo, but input-source enablement still needs macOS settings plus logout/login.
-- `vite-plus` is custom-packaged in this repo from the official macOS release package for the active architecture, and Home Manager prepares `~/.vite-plus` so `vp env` can own Node.js shims.
+- `vite-plus` is custom-packaged in this repo from the official platform-specific CLI package for the active OS and architecture, and Home Manager prepares `~/.vite-plus` so `vp env` can own Node.js shims.
 - `mise` is installed from nixpkgs and its shell integration plus `~/.local/share/mise/shims` PATH entry are managed by Home Manager.
 - `moonbit` is custom-packaged in this repo from MoonBit's public macOS arm64 CLI and core downloads. Upstream currently serves those downloads via `latest` aliases, so the package is pinned by hash and needs a hash refresh when MoonBit rotates the artifact.
 - `Dia` is installed on this machine and already set as the default browser, but it still needs a reliable Nix package source or public macOS download for full reproducibility in this setup.
