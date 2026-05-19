@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate dotfiles
+    runs-on: macos-15
+    env:
+      NIX_CONFIG: experimental-features = nix-command flakes
+      ORIGIN_SYSTEM: aarch64-darwin
+      TNIX_REPO: ${{ github.workspace }}/tnix
+    steps:
+      - name: Checkout dotfiles
+        uses: actions/checkout@v6
+        with:
+          path: dotfiles
+
+      - name: Checkout tnix
+        uses: actions/checkout@v6
+        with:
+          repository: ubugeeei/tnix
+          path: tnix
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v22
+
+      - name: Generate runtime Nix from tnix
+        working-directory: dotfiles
+        run: ./src/tnix/sync.sh
+
+      - name: Check tnix workspace
+        working-directory: dotfiles
+        run: nix run "path:$TNIX_REPO#tnix" -- check ./src/tnix/workspace.tnix
+
+      - name: Check flake evaluation
+        working-directory: dotfiles
+        run: nix flake check --no-build "path:$PWD"
