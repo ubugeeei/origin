@@ -586,6 +586,18 @@ in
     ${pkgs.vite-plus}/bin/vp env on >/dev/null
   '';
 
+  home.activation.installClaudeCode = lib.hm.dag.entryAfter [ "setupVitePlus" ] ''
+    if [ ! -x "$HOME/.local/bin/claude" ]; then
+      ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | ${pkgs.bash}/bin/bash
+    fi
+  '';
+
+  home.activation.installRtk = lib.hm.dag.entryAfter [ "installClaudeCode" ] ''
+    if [ ! -x "$HOME/.local/bin/rtk" ]; then
+      ${pkgs.curl}/bin/curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | RTK_INSTALL_DIR="$HOME/.local/bin" ${pkgs.bash}/bin/bash
+    fi
+  '';
+
   home.activation.installAzooKeyUser = lib.hm.dag.entryAfter [ "setupVitePlus" ] ''
     mkdir -p "$HOME/Library/Input Methods"
     if [ -e "$HOME/Library/Input Methods/azooKeyMac.app" ]; then
