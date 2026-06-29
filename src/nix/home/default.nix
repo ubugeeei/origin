@@ -275,6 +275,40 @@ let
   '';
   raycastLauncher = "${homeDir}/.local/bin/launch-raycast";
   raycastWindowCommandLauncher = "${homeDir}/.local/bin/launch-raycast-window-command";
+  sourceTerminalEnv = ''
+    terminal_env="$HOME/.config/workstation/shell/terminal-env.sh"
+    if [ -f "$terminal_env" ]; then
+      # shellcheck disable=SC1090
+      . "$terminal_env"
+    fi
+  '';
+  mkManagedWrapper = target: ''
+    #!${pkgs.bash}/bin/bash
+    ${sourceTerminalEnv}
+    exec ${target} "$@"
+  '';
+  vpWrapper = ''
+    #!${pkgs.bash}/bin/bash
+    ${sourceTerminalEnv}
+    user_vp="$HOME/.vite-plus/current/bin/vp"
+    if [ -x "$user_vp" ]; then
+      exec "$user_vp" "$@"
+    fi
+    exec ${pkgs.vite-plus}/bin/vp "$@"
+  '';
+  ushWrapper = ''
+    #!${pkgs.bash}/bin/bash
+    ${sourceTerminalEnv}
+    local_ush="${workspaceRoot}/github.com/ubugeeei/ush/target/release/ush"
+    legacy_local_ush="$HOME/Code/github.com/ubugeeei/ush/target/release/ush"
+    if [ -x "$local_ush" ]; then
+      exec "$local_ush" "$@"
+    fi
+    if [ -x "$legacy_local_ush" ]; then
+      exec "$legacy_local_ush" "$@"
+    fi
+    exec ${pkgs.ush}/bin/ush "$@"
+  '';
   hhkbVendorId = 1278;
   hhkbProductId = 33;
   hhkbBluetoothAddress = "FB:D5:C8:03:85:A6";
@@ -303,6 +337,10 @@ let
     lt = "eza --tree --level=2";
     t = "tmux attach -t main || tmux new -s main";
     v = "nvim";
+    vc = "code";
+    vpc = "vp check";
+    vpd = "vp dev";
+    vpt = "vp test";
     ze = "zed";
   };
   ushShellAliases = builtins.removeAttrs commonShellAliases [
@@ -527,7 +565,7 @@ in
     gofumpt
     golangci-lint
     gopls
-    gotools
+    (lib.lowPrio gotools)
     rust-analyzer
     xh
     yq-go
@@ -537,6 +575,7 @@ in
   ];
 
   home.sessionVariables = shellEnv.sessionVariables;
+  home.sessionPath = shellEnv.managedPathEntries;
 
   home.shellAliases = commonShellAliases;
 
@@ -709,37 +748,27 @@ in
   home.file.".local/bin/ush" = {
     executable = true;
     force = true;
-    text = ''
-      #!${pkgs.bash}/bin/bash
-      terminal_env="$HOME/.config/workstation/shell/terminal-env.sh"
-      if [ -f "$terminal_env" ]; then
-        # Ensure managed PATH entries such as ~/.local/bin are available even
-        # when ush is launched from a sparse GUI/app environment.
-        # shellcheck disable=SC1090
-        . "$terminal_env"
-      fi
-      local_ush="$HOME/Code/github.com/ubugeeei/ush/target/release/ush"
-      if [ -x "$local_ush" ]; then
-        exec "$local_ush" "$@"
-      fi
-      exec ${pkgs.ush}/bin/ush "$@"
-    '';
+    text = ushWrapper;
   };
 
   home.file.".local/bin/zed" = {
     executable = true;
-    text = ''
-      #!${pkgs.bash}/bin/bash
-      exec ${pkgs.zed-editor}/bin/zeditor "$@"
-    '';
+    text = mkManagedWrapper "${pkgs.zed-editor}/bin/zeditor";
+  };
+
+  home.file.".local/bin/code" = {
+    executable = true;
+    text = mkManagedWrapper "${pkgs.vscode}/bin/code";
+  };
+
+  home.file.".local/bin/vp" = {
+    executable = true;
+    text = vpWrapper;
   };
 
   home.file.".local/bin/ghostty" = {
     executable = true;
-    text = ''
-      #!${pkgs.bash}/bin/bash
-      exec ${pkgs.ghostty-bin}/bin/ghostty "$@"
-    '';
+    text = mkManagedWrapper "${pkgs.ghostty-bin}/bin/ghostty";
   };
 
   home.file.".local/bin/launch-raycast" = {

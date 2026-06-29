@@ -1,0 +1,145 @@
+let
+  module = args: let
+    lib = args.lib;
+    machine = args.machine;
+    envOr = name: fallback: let
+      value = builtins.getEnv name;
+    in if builtins.lessThan 0 (builtins.stringLength value)
+    then value
+    else fallback;
+    hasGitUserName = if builtins.isNull machine.git.userName
+    then false
+    else true;
+    hasGitUserEmail = if builtins.isNull machine.git.userEmail
+    then false
+    else true;
+    hasGitHubUser = if builtins.isNull machine.git.githubUser
+    then false
+    else true;
+    hasGitSigningKey = if builtins.isNull machine.git.signingKey
+    then false
+    else true;
+    hasGitGpgFormat = if builtins.isNull machine.git.gpgFormat
+    then false
+    else true;
+    globalIgnoreUserName = envOr "ORIGIN_GITHUB_USER" (envOr "ORIGIN_GIT_USER_NAME" machine.username);
+    userSettings = lib.optionalAttrs hasGitUserName {
+      name = machine.git.userName;
+    } // lib.optionalAttrs hasGitUserEmail {
+      email = machine.git.userEmail;
+    } // lib.optionalAttrs hasGitSigningKey {
+      signingKey = machine.git.signingKey;
+    };
+    machineSettings = lib.optionalAttrs true {
+      user = userSettings;
+    } // lib.optionalAttrs hasGitHubUser {
+      github = {
+        user = machine.git.githubUser;
+      };
+    } // lib.optionalAttrs hasGitSigningKey {
+      commit = {
+        gpgSign = true;
+      };
+    } // lib.optionalAttrs hasGitGpgFormat {
+      gpg = {
+        format = machine.git.gpgFormat;
+      };
+    };
+  in {
+    programs = {
+      delta = {
+        enable = true;
+        enableGitIntegration = true;
+        options = {
+          navigate = true;
+          line-numbers = true;
+          side-by-side = true;
+        };
+      };
+      git = {
+        enable = true;
+        settings = machineSettings // {
+          alias = {
+            ap = "add -p";
+            ds = "diff --staged";
+            ga = "add";
+            gaa = "add --all";
+            gam = "commit --amend";
+            gb = "branch";
+            gbda = "!f() { current=$(git branch --show-current); git for-each-ref --format='%(refname:short)' refs/heads | while IFS= read -r branch; do [ $branch = $current ] && continue; git branch -D $branch; done; }; f";
+            gco = "checkout";
+            gf = "fetch";
+            gm = "commit -m";
+            grm = "rm -rf --cached";
+            gs = "status -sb";
+            gsw = "switch";
+            last = "log -1 HEAD --stat";
+            lg = "log --graph --decorate --oneline --all";
+            rb = "rebase";
+            ri = "rebase -i";
+            unstage = "restore --staged";
+          };
+          core = {
+            editor = "nvim";
+          };
+          sequence = {
+            editor = "nvim";
+          };
+          init = {
+            defaultBranch = "main";
+          };
+          pull = {
+            rebase = true;
+          };
+          push = {
+            autoSetupRemote = true;
+          };
+          url = builtins.listToAttrs [ {
+            name = "git@github.com:";
+            value = {
+              insteadOf = [ "https://github.com/" "git://github.com/" ];
+            };
+          } {
+            name = "git@gitlab.com:";
+            value = {
+              insteadOf = [ "https://gitlab.com/" "git://gitlab.com/" ];
+            };
+          } ];
+        };
+        ignores = [ ".DS_Store" ".direnv" ".envrc.local" "__${globalIgnoreUserName}__" "__agent_only" ];
+      };
+      gh = {
+        enable = true;
+        settings = {
+          git_protocol = "ssh";
+          editor = "zed";
+          prompt = "enabled";
+        };
+      };
+      ssh = {
+        enable = true;
+        enableDefaultConfig = false;
+        matchBlocks = builtins.listToAttrs [ {
+          name = "*";
+          value = {
+            addKeysToAgent = "yes";
+          };
+        } {
+          name = "github.com";
+          value = {
+            hostname = "github.com";
+            user = "git";
+            identitiesOnly = true;
+          };
+        } {
+          name = "gitlab.com";
+          value = {
+            hostname = "gitlab.com";
+            user = "git";
+            identitiesOnly = true;
+          };
+        } ];
+      };
+    };
+  };
+in module

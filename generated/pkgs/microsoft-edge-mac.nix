@@ -1,0 +1,28 @@
+let
+  package = args: let
+    stdenvNoCC = args.stdenvNoCC;
+    fetchurl = args.fetchurl;
+    xar = args.xar;
+    cpio = args.cpio;
+    gzip = args.gzip;
+    lib = args.lib;
+  in stdenvNoCC.mkDerivation rec {
+    pname = "microsoft-edge-mac";
+    version = "148.0.3967.70";
+    src = fetchurl {
+      url = "https://msedge.sf.dl.delivery.mp.microsoft.com/filestreamingservice/files/5619858e-e3cb-4684-8509-f2fc1e7815f9/MicrosoftEdge-${version}.pkg";
+      hash = "sha256-24Hhs89fxtEVtDrjnBxBGw2GsVUj/OsygSDYGC5QNqU=";
+    };
+    nativeBuildInputs = [ xar cpio gzip ];
+    dontUnpack = true;
+    installPhase = builtins.replaceStrings [ "@VERSION@" ] [ version ] (builtins.readFile ../../src/templates/nix/pkgs/microsoft-edge-mac/install.sh);
+    meta = {
+      description = "Microsoft Edge browser for macOS";
+      homepage = "https://www.microsoft.com/en-us/edge/business/download";
+      sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+      license = lib.licenses.unfree;
+      platforms = lib.platforms.darwin;
+      maintainers = [  ];
+    };
+  };
+in package

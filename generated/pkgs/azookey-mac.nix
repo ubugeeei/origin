@@ -1,0 +1,28 @@
+let
+  package = args: let
+    stdenvNoCC = args.stdenvNoCC;
+    fetchurl = args.fetchurl;
+    xar = args.xar;
+    cpio = args.cpio;
+    gzip = args.gzip;
+    lib = args.lib;
+  in stdenvNoCC.mkDerivation rec {
+    pname = "azookey-mac";
+    version = "0.1.4";
+    src = fetchurl {
+      url = "https://github.com/azooKey/azooKey-Desktop/releases/download/v${version}/azooKey-release-signed.pkg";
+      hash = "sha256-04kxXJKMKNpzLE6yrejtDBnIlv3wb4NTrGF9ldzys5w=";
+    };
+    nativeBuildInputs = [ xar cpio gzip ];
+    dontUnpack = true;
+    installPhase = builtins.readFile ../../src/templates/nix/pkgs/azookey-mac/install.sh;
+    meta = {
+      description = "azooKey Japanese input method for macOS";
+      homepage = "https://github.com/azooKey/azooKey-Desktop";
+      sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+      license = lib.licenses.asl20;
+      platforms = lib.platforms.darwin;
+      maintainers = [  ];
+    };
+  };
+in package

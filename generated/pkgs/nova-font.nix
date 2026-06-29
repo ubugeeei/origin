@@ -1,0 +1,19 @@
+let
+  package = args: let
+    lib = args.lib;
+    stdenvNoCC = args.stdenvNoCC;
+    fontSrc = args.fontSrc;
+  in stdenvNoCC.mkDerivation {
+    pname = "nova-font";
+    version = "1.0.0";
+    src = fontSrc;
+    dontConfigure = true;
+    dontBuild = true;
+    installPhase = builtins.readFile ../../src/templates/nix/pkgs/nova-font/install.sh;
+    meta = {
+      description = "Repo-local font assets bundled with this workstation config";
+      license = lib.licenses.unfreeRedistributable;
+      platforms = lib.platforms.darwin;
+    };
+  };
+in package
