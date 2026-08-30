@@ -527,7 +527,9 @@ in
     gofumpt
     golangci-lint
     gopls
-    gotools
+    # gopls and gotools both ship bin/modernize; let gopls win that one file
+    # while keeping goimports and the rest of gotools.
+    (lib.lowPrio gotools)
     rust-analyzer
     xh
     yq-go
