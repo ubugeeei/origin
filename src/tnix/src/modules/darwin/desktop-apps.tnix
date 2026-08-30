@@ -11,6 +11,9 @@ let
     pathsToLink = [ "/Applications" "/Library/Input Methods" ];
   };
   exposedApps = [
+    "ChatGPT.app"
+    "Claude.app"
+    "Cursor.app"
     "Discord.app"
     "Firefox.app"
     "Ghostty.app"
@@ -18,6 +21,7 @@ let
     "Google Calendar.app"
     "Google Chrome.app"
     "Karabiner-Elements.app"
+    "Kimi.app"
     "Microsoft Edge.app"
     "Obsidian.app"
     "Raycast.app"
@@ -62,6 +66,10 @@ in
       pkgs.ghostty-bin
       pkgs.zed-editor
       pkgs.vscode
+      pkgs.code-cursor
+      pkgs.chatgpt
+      pkgs.claude-desktop
+      pkgs.kimi-mac
       pkgs.discord
       pkgs.firefox
       pkgs.google-chrome

@@ -181,6 +181,17 @@ Sign into:
 - Zoom
 - Spotify
 
+## AI Apps
+
+Sign into:
+
+- Claude
+- ChatGPT (this is the desktop app that now carries Codex; the separate `Codex.app` was discontinued in July 2026)
+- Cursor
+- Kimi
+
+The `codex` CLI is installed separately by Home Manager and authenticates with the same ChatGPT account through `codex login`.
+
 ## Browser / Google Apps
 
 Sign into:

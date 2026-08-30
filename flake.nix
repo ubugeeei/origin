@@ -103,6 +103,24 @@
             import ./generated/pkgs/chrome-webapp-bundle.nix {
               inherit stdenvNoCC lib;
             }) { };
+          claude-desktop = prev.callPackage ({
+            stdenvNoCC,
+            fetchurl,
+            unzip,
+            lib,
+          }:
+            import ./generated/pkgs/claude-desktop.nix {
+              inherit stdenvNoCC fetchurl unzip lib;
+            }) { };
+          kimi-mac = prev.callPackage ({
+            stdenvNoCC,
+            fetchurl,
+            undmg,
+            lib,
+          }:
+            import ./generated/pkgs/kimi-mac.nix {
+              inherit stdenvNoCC fetchurl undmg lib;
+            }) { };
           moonbit = prev.callPackage ({
             stdenvNoCC,
             fetchurl,

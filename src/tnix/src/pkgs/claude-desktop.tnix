@@ -1,0 +1,54 @@
+let
+  package :: dynamic;
+  # @tnix-ignore
+  package = (args :: {
+    stdenvNoCC :: dynamic;
+    fetchurl :: dynamic;
+    unzip :: dynamic;
+    lib :: dynamic;
+  }):
+    let
+      stdenvNoCC = args.stdenvNoCC;
+      fetchurl = args.fetchurl;
+      unzip = args.unzip;
+      lib = args.lib;
+      # Anthropic publishes the universal build under a content-addressed file
+      # name, so the build id has to be pinned next to the version.
+      build = "f65e386db0db64c8f8b39950e25adb11f5f5e3f3";
+    in
+stdenvNoCC.mkDerivation rec {
+  pname = "claude-desktop";
+  version = "1.40609.0";
+
+  src = fetchurl {
+    url = "https://downloads.claude.ai/releases/darwin/universal/${version}/Claude-${build}.zip";
+    hash = "sha256-Xf7Nm0av6DkLnQwUPFa92CbW1QHCaG/rlOGgkyKW1Eo=";
+  };
+
+  nativeBuildInputs = [
+    unzip
+  ];
+
+  sourceRoot = ".";
+
+  dontConfigure = true;
+  dontBuild = true;
+
+  # The bundle is notarized, so the default fixup phase must not rewrite
+  # shebangs or strip binaries inside it; that invalidates the signature and
+  # macOS then refuses to launch the app.
+  dontFixup = true;
+
+  installPhase = builtins.readFile ../../src/templates/nix/pkgs/claude-desktop/install.sh;
+
+  meta = {
+    description = "Claude desktop app for macOS";
+    homepage = "https://claude.com/download";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    license = lib.licenses.unfree;
+    platforms = lib.platforms.darwin;
+    maintainers = [ ];
+  };
+};
+in
+package

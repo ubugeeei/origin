@@ -1,0 +1,51 @@
+let
+  package :: dynamic;
+  # @tnix-ignore
+  package = (args :: {
+    stdenvNoCC :: dynamic;
+    fetchurl :: dynamic;
+    undmg :: dynamic;
+    lib :: dynamic;
+  }):
+    let
+      stdenvNoCC = args.stdenvNoCC;
+      fetchurl = args.fetchurl;
+      undmg = args.undmg;
+      lib = args.lib;
+    in
+stdenvNoCC.mkDerivation rec {
+  pname = "kimi-mac";
+  version = "3.2.3";
+
+  src = fetchurl {
+    url = "https://kimi-img.moonshot.cn/app/download/mac/kimi_${version}.dmg";
+    hash = "sha256-jUAIEf9O3CyZXRO4ujvubHEhCedSre4jh0sWdZAwWXA=";
+  };
+
+  nativeBuildInputs = [
+    undmg
+  ];
+
+  sourceRoot = ".";
+
+  dontConfigure = true;
+  dontBuild = true;
+
+  # The bundle is notarized, so the default fixup phase must not rewrite
+  # shebangs or strip binaries inside it; that invalidates the signature and
+  # macOS then refuses to launch the app.
+  dontFixup = true;
+
+  installPhase = builtins.readFile ../../src/templates/nix/pkgs/kimi-mac/install.sh;
+
+  meta = {
+    description = "Kimi desktop app for macOS";
+    homepage = "https://www.moonshot.ai/";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    license = lib.licenses.unfree;
+    platforms = [ "aarch64-darwin" ];
+    maintainers = [ ];
+  };
+};
+in
+package
