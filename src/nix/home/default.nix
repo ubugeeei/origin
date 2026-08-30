@@ -762,6 +762,32 @@ in
     text = cloneScriptText;
   };
 
+  home.file.".local/bin/gc" = {
+    executable = true;
+    text = ''
+      #!${pkgs.bash}/bin/bash
+      set -euo pipefail
+
+      repo=''${ORIGIN_REPO_ROOT:-}
+
+      if [ -z "$repo" ]; then
+        for candidate in "${workspaceRoot}"/*/*/origin; do
+          if [ -x "$candidate/_legacy/gc.sh" ]; then
+            repo=$candidate
+            break
+          fi
+        done
+      fi
+
+      if [ ! -x "$repo/_legacy/gc.sh" ]; then
+        printf 'gc: origin checkout not found under %s; set ORIGIN_REPO_ROOT\n' "${workspaceRoot}" >&2
+        exit 1
+      fi
+
+      exec "$repo/_legacy/gc.sh" "$@"
+    '';
+  };
+
   home.file.".local/bin/g" = {
     executable = true;
     text = ''

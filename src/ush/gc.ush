@@ -1,0 +1,397 @@
+use std::command::{capture, exists as command_exists}
+use std::env::get_or
+use std::fs::write_text
+use std::path::from_source
+use std::string::replace
+
+fn shell_quote(value: String) -> String {
+  "'" + replace(value, "'", "'\''") + "'"
+}
+
+fn env_enabled(name: String) -> Bool {
+  let value = get_or(name, "")
+  if value == "" {
+    false
+  }
+  else if value == "0" {
+    false
+  }
+  else if value == "false" {
+    false
+  }
+  else {
+    true
+  }
+}
+
+fn slot_matches(slot: String, flag: String, alias: String) -> Bool {
+  let value = get_or(slot, "")
+  if value == flag {
+    true
+  }
+  else if value == alias {
+    true
+  }
+  else {
+    false
+  }
+}
+
+fn option_on(flag: String, alias: String, env_name: String) -> Bool {
+  let found = env_enabled(env_name)
+  for slot in ["RUN_USH_ARG1", "RUN_USH_ARG2", "RUN_USH_ARG3", "RUN_USH_ARG4", "RUN_USH_ARG5", "RUN_USH_ARG6"] {
+    if slot_matches(slot, flag, alias) {
+      let found = true
+    }
+  }
+  found
+}
+
+fn numeric(value: String) -> String {
+  "case $" + value + " in '' | *[!0-9]*) " + value + "=0 ;; esac; "
+}
+
+fn human(kb: String) -> String {
+  capture("kb=" + shell_quote(kb) + "; " + numeric("kb") + "if [ $kb -ge 1073741824 ]; then scaled=$(( kb * 10 / 1073741824 )); unit=TiB; elif [ $kb -ge 1048576 ]; then scaled=$(( kb * 10 / 1048576 )); unit=GiB; elif [ $kb -ge 1024 ]; then scaled=$(( kb * 10 / 1024 )); unit=MiB; else scaled=$(( kb * 10 )); unit=KiB; fi; /usr/bin/printf '%s.%s %s' $(( scaled / 10 )) $(( scaled % 10 )) $unit")
+}
+
+fn add_kb(a: String, b: String) -> String {
+  capture("a=" + shell_quote(a) + "; b=" + shell_quote(b) + "; " + numeric("a") + numeric("b") + "/usr/bin/printf '%s' $(( a + b ))")
+}
+
+fn drop_kb(before: String, after: String) -> String {
+  capture("a=" + shell_quote(before) + "; b=" + shell_quote(after) + "; " + numeric("a") + numeric("b") + "delta=$(( a - b )); if [ $delta -lt 0 ]; then delta=0; fi; /usr/bin/printf '%s' $delta")
+}
+
+fn du_kb(path: String) -> String {
+  capture("/usr/bin/du -sk " + shell_quote(path) + " 2>/dev/null | /usr/bin/awk 'NR == 1 { total = $1 } END { print total + 0 }'")
+}
+
+fn df_used_kb(path: String) -> String {
+  capture("/bin/df -Pk " + shell_quote(path) + " 2>/dev/null | /usr/bin/awk 'NR == 2 { print $3 + 0 }'")
+}
+
+fn file_sum_kb(path: String) -> String {
+  capture("/usr/bin/awk -F'\t' '{ total = total + $1 } END { print total + 0 }' " + shell_quote(path))
+}
+
+fn file_lines(path: String) -> String {
+  capture("/usr/bin/wc -l < " + shell_quote(path) + " | /usr/bin/tr -d ' '")
+}
+
+fn row(size: String, label: String) -> String {
+  capture("/usr/bin/printf '  %11s  %s' " + shell_quote(size) + " " + shell_quote(label))
+}
+
+# Section runners print their progress, and a printing function cannot also
+# return a value, so each one records its reclaimed kilobytes in a file instead.
+fn record_kb(path: String, kb: String) -> () {
+  write_text(path, kb)
+}
+
+fn read_kb(path: String) -> String {
+  capture("if [ -f " + shell_quote(path) + " ]; then /bin/cat " + shell_quote(path) + "; else /usr/bin/printf '%s' 0; fi")
+}
+
+fn section(title: String) -> () {
+  print ""
+  print "-- " + title + " --"
+}
+
+fn mode_label(dry: Bool) -> String {
+  if dry {
+    "dry-run (nothing is deleted)"
+  }
+  else {
+    "execute"
+  }
+}
+
+fn run_step(dry: Bool, command: String) -> unknown!() {
+  if dry {
+    print "  skip  $ " + command
+  }
+  else {
+    print "  run   $ " + command
+    shell (command + " || /usr/bin/printf '%s\n' " + shell_quote("  warn  command failed, continuing: " + command) + " >&2")?
+  }
+}
+
+fn resolve_workspace_root(repo_root: String, home: String) -> String {
+  let configured = get_or("GC_WORKSPACE_ROOT", "")
+  if configured != "" {
+    configured
+  }
+  else {
+    let script = repo_root.join("_legacy").join("print-machine-env.sh")
+    let detected = capture(shell_quote(script) + " 2>/dev/null | /usr/bin/grep -e '^ORIGIN_WORKSPACE_ROOT' | /usr/bin/cut -f2 || true")
+    if detected == "" {
+      home + "/Source"
+    }
+    else {
+      detected
+    }
+  }
+}
+
+# Emits "<repo>\t<artifact directory>" for every gitignored build artifact under root.
+# Repositories are discovered with find, and each one is asked for its own ignored
+# entries so that .gitignore stays the single source of truth for what is disposable.
+fn workspace_scan_command(root: String, out: String) -> String {
+  let skipped = "-type d '(' -name node_modules -o -name target -o -name dist -o -name build -o -name .next -o -name .nuxt -o -name .output -o -name .turbo -o -name .parcel-cache -o -name .vite -o -name .svelte-kit -o -name .direnv -o -name .venv -o -name vendor -o -name coverage -o -name .cache ')' -prune"
+  let artifacts = "'(^|/)(node_modules|target|dist|build|\.next|\.nuxt|\.output|\.turbo|\.parcel-cache|\.vite|\.svelte-kit|coverage)/$'"
+  let repos = "/usr/bin/find " + shell_quote(root) + " " + skipped + " -o -name .git -prune -print 2>/dev/null"
+  let ignored = "/usr/bin/git -C $repo status --porcelain --ignored=matching -unormal -z 2>/dev/null | /usr/bin/tr '\0' '\n' | /usr/bin/sed -n 's|^!! ||p' | /usr/bin/grep -E " + artifacts
+  let emit = "while read -r rel; do /usr/bin/printf '%s\t%s\n' $repo $repo/${rel%/}; done"
+  "( set -f; IFS=; : > " + shell_quote(out) + "; " + repos + " | while read -r gitpath; do repo=${gitpath%/.git}; " + ignored + " | " + emit + "; done >> " + shell_quote(out) + " )"
+}
+
+fn measure_command(list: String, field: Int, out: String) -> String {
+  "/usr/bin/cut -f" + field + " " + shell_quote(list) + " | /usr/bin/tr '\n' '\0' | /usr/bin/xargs -0 /usr/bin/du -sk 2>/dev/null | /usr/bin/sort -nr > " + shell_quote(out) + " || true"
+}
+
+fn remove_command(list: String, field: Int) -> String {
+  "/usr/bin/cut -f" + field + " " + shell_quote(list) + " | /usr/bin/tr '\n' '\0' | /usr/bin/xargs -0 /bin/rm -rf"
+}
+
+# Renders the first `limit` lines of a "<kilobytes>\t<path>" file as a size ranking.
+fn ranked_command(file: String, prefix: String, limit: String) -> String {
+  let formats = "-v rowfmt='  %11s  %s\n' -v sizefmt='%.1f %s' -v tailfmt='  ... and %d more (set GC_VERBOSE=1 to list every entry)\n'"
+  let units = "-v kib=KiB -v mib=MiB -v gib=GiB -v tib=TiB"
+  let program = "'{ shown = shown + 1; if (shown > limit) { hidden = hidden + 1; next } size = $1 + 0; unit = kib; if (size >= 1073741824) { size = size / 1073741824; unit = tib } else if (size >= 1048576) { size = size / 1048576; unit = gib } else if (size >= 1024) { size = size / 1024; unit = mib } label = $2; if (index(label, prefix) == 1) { label = substr(label, length(prefix) + 1) } printf rowfmt, sprintf(sizefmt, size, unit), label } END { if (hidden > 0) { printf tailfmt, hidden } }'"
+  "/usr/bin/awk -F'\t' " + formats + " " + units + " -v prefix=" + shell_quote(prefix) + " -v limit=" + shell_quote(limit) + " " + program + " " + shell_quote(file)
+}
+
+fn run_nix(dry: Bool, optimise: Bool, result: String) -> unknown!() {
+  if command_exists("nix") == false {
+    print "  skip: nix is not installed"
+  }
+  else {
+    let before = df_used_kb("/nix/store")
+    print row(human(before), "used by the nix store before collection")
+
+    if command_exists("nh") {
+      if dry {
+        print "  run   $ nh clean all --dry"
+        shell "nh clean all --dry || /usr/bin/printf '%s\n' '  warn  command failed, continuing: nh clean all --dry' >&2"?
+      }
+      else {
+        run_step(dry, "nh clean all")?
+      }
+    }
+    else {
+      print "  skip: nh is not installed"
+    }
+
+    if command_exists("nix-collect-garbage") {
+      run_step(dry, "nix-collect-garbage --delete-old")?
+      run_step(dry, "sudo nix-collect-garbage --delete-old")?
+    }
+    else {
+      print "  skip: nix-collect-garbage is not installed"
+    }
+
+    run_step(dry, "nix store gc")?
+
+    if optimise {
+      run_step(dry, "nix store optimise")?
+    }
+    else {
+      print "  skip: nix store optimise (pass --optimise to run it)"
+    }
+
+    let after = df_used_kb("/nix/store")
+    print row(human(after), "used by the nix store after collection")
+    record_kb(result, drop_kb(before, after))
+  }
+}
+
+fn run_cargo(dry: Bool, cargo_home: String, result: String) -> unknown!() {
+  if cargo_home.is_dir() == false {
+    print "  skip: " + cargo_home + " is not a directory"
+  }
+  else {
+    let total = "0"
+    for name in ["registry/cache", "registry/src", "registry/index", "git/checkouts", "git/db"] {
+      let path = cargo_home + "/" + name
+      if path.is_dir() {
+        let kb = du_kb(path)
+        let total = add_kb(total, kb)
+        print row(human(kb), name)
+        if dry == false {
+          shell ("/bin/rm -rf " + shell_quote(path))?
+        }
+        else {
+          ()
+        }
+      }
+      else {
+        ()
+      }
+    }
+    print row(human(total), "in the cargo download and checkout caches")
+    record_kb(result, total)
+  }
+}
+
+fn run_workspace(dry: Bool, root: String, work: String, limit: String, result: String) -> unknown!() {
+  if root.is_dir() == false {
+    print "  skip: " + root + " is not a directory"
+  }
+  else {
+    let targets = work + "/workspace-targets.tsv"
+    let sizes = work + "/workspace-sizes.tsv"
+    let items = work + "/workspace-items.tsv"
+    let projects = work + "/workspace-projects.tsv"
+
+    print "  scanning gitignored build artifacts under " + root + " ..."
+    shell (workspace_scan_command(root, targets))?
+    let found = file_lines(targets)
+
+    if found == "0" {
+      print "  nothing to collect"
+    }
+    else {
+      print "  measuring " + found + " directories ..."
+      shell (measure_command(targets, 2, sizes))?
+      shell ("/usr/bin/awk -F'\t' -v OFS='\t' 'NR == FNR { size[$2] = $1; next } { print size[$2] + 0, $1, $2 }' " + shell_quote(sizes) + " " + shell_quote(targets) + " > " + shell_quote(items))?
+      shell ("/usr/bin/awk -F'\t' -v OFS='\t' '{ kb[$2] = kb[$2] + $1 } END { for (key in kb) print kb[key], key }' " + shell_quote(items) + " | /usr/bin/sort -nr > " + shell_quote(projects))?
+
+      shell (ranked_command(projects, root + "/", limit))?
+
+      if dry == false {
+        print "  removing " + found + " directories ..."
+        shell (remove_command(items, 3))?
+      }
+
+      let total = file_sum_kb(items)
+      print row(human(total), "in " + found + " directories across " + file_lines(projects) + " projects")
+      record_kb(result, total)
+    }
+  }
+}
+
+fn run_tmp(dry: Bool, days: String, work: String, limit: String, result: String) -> unknown!() {
+  let targets = work + "/tmp-targets.txt"
+  let sizes = work + "/tmp-sizes.tsv"
+  let user = capture("/usr/bin/id -un")
+
+  print "  scanning /tmp for entries owned by " + user + " and untouched for more than " + days + " days ..."
+  shell ("/usr/bin/find -H /tmp -mindepth 1 -maxdepth 1 -user " + shell_quote(user) + " '(' -type f -o -type d ')' -mtime +" + shell_quote(days) + " -print 2>/dev/null > " + shell_quote(targets) + " || true")?
+  let found = file_lines(targets)
+
+  if found == "0" {
+    print "  nothing to collect"
+  }
+  else {
+    print "  measuring " + found + " entries ..."
+    shell (measure_command(targets, 1, sizes))?
+
+    shell (ranked_command(sizes, "/tmp/", limit))?
+
+    if dry == false {
+      print "  removing " + found + " entries ..."
+      shell (remove_command(targets, 1))?
+    }
+
+    let total = file_sum_kb(sizes)
+    print row(human(total), "in " + found + " entries")
+    record_kb(result, total)
+  }
+}
+
+fn elapsed(start: String, finish: String) -> String {
+  capture("a=" + shell_quote(start) + "; b=" + shell_quote(finish) + "; " + numeric("a") + numeric("b") + "seconds=$(( b - a )); /usr/bin/printf '%dm%02ds' $(( seconds / 60 )) $(( seconds % 60 ))")
+}
+
+fn main() -> unknown!() {
+  let started = capture("/bin/date +%s")
+  let dry = option_on("--dry-run", "-n", "GC_DRY_RUN")
+  let verbose = option_on("--verbose", "-v", "GC_VERBOSE")
+  let optimise = option_on("--optimise", "--optimize", "GC_NIX_OPTIMISE")
+  let skip_nix = option_on("--skip-nix", "--skip-nix", "GC_SKIP_NIX")
+  let skip_cargo = option_on("--skip-cargo", "--skip-cargo", "GC_SKIP_CARGO")
+  let skip_workspace = option_on("--skip-workspace", "--skip-workspace", "GC_SKIP_WORKSPACE")
+  let skip_tmp = option_on("--skip-tmp", "--skip-tmp", "GC_SKIP_TMP")
+
+  let home = get_or("HOME", "")
+  let repo_root = from_source("../..").resolve()
+  let workspace_root = resolve_workspace_root(repo_root, home)
+  let cargo_home = get_or("CARGO_HOME", home + "/.cargo")
+  let tmp_age = get_or("GC_TMP_AGE_DAYS", "3")
+  let limit = get_or("GC_TOP", "20")
+  if verbose {
+    let limit = "1000000"
+  }
+  let work = capture("/usr/bin/mktemp -d")
+
+  print "== gc =="
+  print "  mode       " + mode_label(dry)
+  print "  workspace  " + workspace_root
+  print "  cargo home " + cargo_home
+  print "  tmp        /tmp entries untouched for more than " + tmp_age + " days"
+
+  let nix_result = work + "/nix.kb"
+  let cargo_result = work + "/cargo.kb"
+  let workspace_result = work + "/workspace.kb"
+  let tmp_result = work + "/tmp.kb"
+
+  section("nix")
+  if skip_nix {
+    print "  skipped"
+  }
+  else {
+    run_nix(dry, optimise, nix_result)?
+  }
+
+  section("cargo global cache")
+  if skip_cargo {
+    print "  skipped"
+  }
+  else {
+    run_cargo(dry, cargo_home, cargo_result)?
+  }
+
+  section("workspace artifacts")
+  if skip_workspace {
+    print "  skipped"
+  }
+  else {
+    run_workspace(dry, workspace_root, work, limit, workspace_result)?
+  }
+
+  section("tmp")
+  if skip_tmp {
+    print "  skipped"
+  }
+  else {
+    run_tmp(dry, tmp_age, work, limit, tmp_result)?
+  }
+
+  let nix_freed = read_kb(nix_result)
+  let cargo_freed = read_kb(cargo_result)
+  let workspace_freed = read_kb(workspace_result)
+  let tmp_freed = read_kb(tmp_result)
+  shell ("/bin/rm -rf " + shell_quote(work))?
+
+  let total = add_kb(add_kb(nix_freed, cargo_freed), add_kb(workspace_freed, tmp_freed))
+  let finished = capture("/bin/date +%s")
+
+  section("summary")
+  print row(human(nix_freed), "nix")
+  print row(human(cargo_freed), "cargo")
+  print row(human(workspace_freed), "workspace")
+  print row(human(tmp_freed), "tmp")
+  print row(human(total), "total")
+  print "  elapsed " + elapsed(started, finished)
+
+  if dry {
+    print ""
+    print "  dry-run: nothing was deleted. re-run without --dry-run to collect."
+  }
+  else {
+    ()
+  }
+}
+
+main()?

@@ -20,6 +20,7 @@ Implementation source now lives under `src/`; typed Nix source-of-truth is under
 - installs CLI tools, editors, and selected GUI apps
 - exposes selected Nix-managed apps into `/Applications`
 - keeps machine-specific values in `machine/local.env`, which is created on demand and intentionally gitignored
+- reclaims disk space with `gc`, covering the Nix store, Cargo caches, gitignored build artifacts, and `/tmp`
 
 ## Quick Start
 
@@ -66,6 +67,7 @@ Implementation source now lives under `src/`; typed Nix source-of-truth is under
 - `bootstrap` and `apply` evaluate `path:$PWD#workstation`, so local uncommitted changes affect what gets applied.
 - Activation scripts replace managed app bundles under `/Applications` and `/Library/Input Methods`.
 - Some cleanup helpers intentionally remove files, including app bundles that are considered unmanaged or unwanted on the target machine.
+- `gc` deletes Nix generations, Cargo caches, gitignored build artifacts under the workspace root, and stale `/tmp` entries. Run `gc --dry-run` first; see [docs/gc.md](docs/gc.md).
 
 ## Repository Layout
 
@@ -101,3 +103,4 @@ Edit `.tnix` under `src/tnix/src/` and run `./src/tnix/sync.sh`; generated runti
 - workspace layout: [docs/workspace.md](docs/workspace.md)
 - manual follow-ups: [docs/manual-steps.md](docs/manual-steps.md)
 - optional app cleanup notes: [docs/debloat.md](docs/debloat.md)
+- disk space reclamation: [docs/gc.md](docs/gc.md)
