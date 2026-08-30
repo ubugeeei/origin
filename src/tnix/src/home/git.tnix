@@ -163,27 +163,29 @@ let
         ssh = {
           enable = true;
           enableDefaultConfig = false;
-          matchBlocks = builtins.listToAttrs [
+          # Home Manager deprecated `matchBlocks` in favour of `settings`, which
+          # takes upstream `ssh_config` directive names verbatim.
+          settings = builtins.listToAttrs [
             {
               name = "*";
               value = {
-                addKeysToAgent = "yes";
+                AddKeysToAgent = "yes";
               };
             }
             {
               name = "github.com";
               value = {
-                hostname = "github.com";
-                user = "git";
-                identitiesOnly = true;
+                HostName = "github.com";
+                User = "git";
+                IdentitiesOnly = true;
               };
             }
             {
               name = "gitlab.com";
               value = {
-                hostname = "gitlab.com";
-                user = "git";
-                identitiesOnly = true;
+                HostName = "gitlab.com";
+                User = "git";
+                IdentitiesOnly = true;
               };
             }
           ];

@@ -31,6 +31,10 @@ let
           defaultEditor = false;
           viAlias = true;
           vimAlias = true;
+          # Adopt the current Home Manager defaults instead of the pre-26.05
+          # legacy ones; nothing configured here needs those providers.
+          withRuby = false;
+          withPython3 = false;
           extraPackages = neovimExtraPackages;
           initLua = initLua;
         };
