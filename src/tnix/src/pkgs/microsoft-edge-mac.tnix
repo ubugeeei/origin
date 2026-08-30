@@ -34,6 +34,10 @@ stdenvNoCC.mkDerivation rec {
 
   dontUnpack = true;
 
+  # Edge is notarized and ships shell scripts inside the bundle, so the default
+  # fixup phase would rewrite their shebangs and invalidate the code signature.
+  dontFixup = true;
+
   installPhase =
     builtins.replaceStrings
       [ "@VERSION@" ]
