@@ -1,0 +1,54 @@
+let
+  package :: dynamic;
+  # @tnix-ignore
+  package = (args :: {
+    stdenvNoCC :: dynamic;
+    fetchurl :: dynamic;
+    undmg :: dynamic;
+    lib :: dynamic;
+  }):
+    let
+      stdenvNoCC = args.stdenvNoCC;
+      fetchurl = args.fetchurl;
+      undmg = args.undmg;
+      lib = args.lib;
+    in
+stdenvNoCC.mkDerivation rec {
+  pname = "wavebox-mac";
+  version = "151.2.154.2";
+
+  src = fetchurl {
+    # The published file name contains spaces, which cannot appear in a store
+    # path, so the fetched name is spelled out here.
+    name = "Install-Wavebox-${version}.dmg";
+    url = "https://download.wavebox.app/stable/macarm64/Install%20Wavebox%20${version}.dmg";
+    hash = "sha256-BiacQypbjONz0AcPhz6sV+C2UjHIwKFlDioejTJwhf8=";
+  };
+
+  nativeBuildInputs = [
+    undmg
+  ];
+
+  sourceRoot = ".";
+
+  dontConfigure = true;
+  dontBuild = true;
+
+  # The bundle is notarized, so the default fixup phase must not rewrite
+  # shebangs or strip binaries inside it; that invalidates the signature and
+  # macOS then refuses to launch the app.
+  dontFixup = true;
+
+  installPhase = builtins.readFile ../../src/templates/nix/pkgs/wavebox-mac/install.sh;
+
+  meta = {
+    description = "Wavebox productivity browser for macOS";
+    homepage = "https://wavebox.io/";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    license = lib.licenses.unfree;
+    platforms = [ "aarch64-darwin" ];
+    maintainers = [ ];
+  };
+};
+in
+package

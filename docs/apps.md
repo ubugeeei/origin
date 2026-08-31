@@ -18,6 +18,7 @@ Status as of August 31, 2026.
 - Firefox
 - Google Chrome
 - Microsoft Edge
+- Wavebox
 - Gmail
 - Google Calendar
 - Twitter
@@ -31,6 +32,7 @@ These are exposed directly into `/Applications` after `darwin-rebuild switch`.
 ## Nix-managed CLI apps
 
 - Codex CLI
+- rtk
 - AWS CLI
 - Google Workspace CLI (`gam`)
 - GitHub CLI
@@ -67,6 +69,8 @@ These are exposed directly into `/Applications` after `darwin-rebuild switch`.
 - `Claude` is custom-packaged in this repo from Anthropic's public universal macOS build. The file name is content-addressed, so both the version and the build id are pinned in `src/tnix/src/pkgs/claude-desktop.tnix`. Resolve the current pair with `curl -sI https://api.anthropic.com/api/desktop/darwin/universal/dmg/latest/redirect` or `https://downloads.claude.ai/releases/darwin/universal/RELEASES.json`.
 - `ChatGPT` comes from the nixpkgs `chatgpt` package. The standalone `Codex.app` was discontinued in July 2026 and folded into the ChatGPT desktop app, so the OpenAI coding agent GUI now ships as `ChatGPT.app` from the `codex-app-prod` channel. The `codex` CLI stays a separate nixpkgs package under Home Manager.
 - `Kimi` is custom-packaged in this repo from Moonshot's public macOS arm64 disk image. The image ships a wrapper installer, so the package pulls the real bundle out of `Kimi Installer.app/Contents/Helpers/`.
+- `Wavebox` is custom-packaged in this repo from Wavebox's public macOS Apple Silicon disk image. nixpkgs removed its own `wavebox` package in June 2025 for lack of maintenance, and that package was an `x86_64-linux` deb anyway, so the attribute here is named `wavebox-mac`. The download page only links to a `latest` alias, so the versioned file that alias resolves to is pinned instead; refresh it with `curl -sIL https://download.wavebox.app/latest/stable/macarm64`.
+- `rtk` comes from the nixpkgs `rtk` package. It is a CLI proxy that compresses command output before it reaches a coding agent, so it lives in `home.packages` next to `codex`.
 - `Dia` is installed on this machine and already set as the default browser, but it still needs a reliable Nix package source or public macOS download for full reproducibility in this setup.
 - Gmail, Google Calendar, and Twitter are web services, so they are currently represented as Chrome app bundles rather than native vendor apps.
 - `Vide` is the IDE developed by ubugeeei and the editor used most often here, but it is not open-source, so this repo does not package it. `Zed` is the next editor in regular use, while `VS Code` and `Neovim` are primarily kept for validation of editor integrations and LSP behavior.

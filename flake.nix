@@ -148,6 +148,15 @@
             import ./generated/pkgs/vite-plus.nix {
               inherit stdenvNoCC fetchurl lib;
             }) { };
+          wavebox-mac = prev.callPackage ({
+            stdenvNoCC,
+            fetchurl,
+            undmg,
+            lib,
+          }:
+            import ./generated/pkgs/wavebox-mac.nix {
+              inherit stdenvNoCC fetchurl undmg lib;
+            }) { };
           gmail-app = final.chrome-webapp-bundle {
             appName = "Gmail";
             bundleId = "${machine.appNamespace}.gmail";

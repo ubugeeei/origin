@@ -197,7 +197,10 @@ The `codex` CLI is installed separately by Home Manager and authenticates with t
 Sign into:
 
 - Chrome
+- Wavebox
 - Gmail
 - Google Calendar
+
+Wavebox uses its own account, which carries the workspace, profiles, and app tabs between machines.
 
 Safari is built into macOS and remains available even though it is not installed by Nix.

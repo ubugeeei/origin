@@ -29,6 +29,7 @@ let
     "Spotify.app"
     "Twitter.app"
     "Visual Studio Code.app"
+    "Wavebox.app"
     "Zed.app"
     "azooKeyMac.app"
     "zoom.us.app"
@@ -73,6 +74,7 @@ in
       pkgs.discord
       pkgs.firefox
       pkgs.google-chrome
+      pkgs.wavebox-mac
       pkgs.obsidian
       pkgs.slack
       pkgs.spotify

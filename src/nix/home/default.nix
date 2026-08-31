@@ -494,6 +494,7 @@ in
     awscli2
     bun
     codex
+    rtk
     colima
     defaultbrowser
     docker-client
