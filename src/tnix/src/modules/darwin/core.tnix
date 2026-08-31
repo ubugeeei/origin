@@ -204,6 +204,9 @@ in
         sudo_local = {
           enable = machine.security.touchIdSudoAuth;
           touchIdAuth = machine.security.touchIdSudoAuth;
+          # pam_tid alone cannot reach the biometric prompt from inside a tmux
+          # or screen session, so pam_reattach comes along with it.
+          reattach = machine.security.touchIdSudoAuth;
         };
       };
     };

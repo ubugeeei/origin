@@ -105,7 +105,7 @@ Notes:
 - The `machine/` directory is not tracked anymore; `_legacy/init-machine-config.sh` creates it only when you actually generate `machine/local.env`.
 - If `machine/local.env` is missing, `_legacy/bootstrap-macos.sh` and `_legacy/apply.sh` derive values from the current Mac at runtime.
 - The canonical flake target stays `workstation`; local scripts invoke it through `path:$PWD#workstation` so uncommitted local files are included during evaluation. The actual macOS `hostName` and `localHostName` still come from `machine/local.env` or the detected machine defaults.
-- `ORIGIN_TOUCH_ID_SUDO_AUTH` defaults to `false`. Turn it on only if you want nix-darwin to manage Touch ID for `sudo` on that Mac.
+- `ORIGIN_TOUCH_ID_SUDO_AUTH` defaults to `false`. Turn it on only if you want nix-darwin to manage Touch ID for `sudo` on that Mac. When it is on, `/etc/pam.d/sudo_local` gets `pam_tid.so` plus `pam_reattach.so`, so Touch ID also works for `sudo` inside `tmux`.
 - On the first `switch`, existing dotfiles managed by Home Manager are backed up with the `.before-origin` suffix instead of being overwritten in place.
 - This repo expects `ubugeeei/tnix` at `$HOME/Source/github.com/ubugeeei/tnix` so `tnix.config.tnix` can read upstream declaration packs and `./src/tnix/sync.sh` can compile runtime `.nix` files without copying registry packs into this repository.
 - `Vide` remains a manual install and personal workflow choice. `Zed` is the next editor in regular use, while `VS Code` and `Neovim` are mainly there to validate LSP integrations for ubugeeei tooling.
