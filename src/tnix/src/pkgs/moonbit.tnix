@@ -18,12 +18,12 @@ stdenvNoCC.mkDerivation rec {
   src = fetchurl {
     # MoonBit's public macOS download currently resolves through the latest alias.
     url = "https://cli.moonbitlang.com/binaries/latest/moonbit-darwin-aarch64.tar.gz";
-    hash = "sha256-6WSVpQMXOM7oU7vq1M9z96hOt1GKAXT+vW+SpFQaQuQ=";
+    hash = "sha256-n2F8mueLCOGTVOcKQgPCFX/1Nzx4w0CuvnIog0Qa5bU=";
   };
 
   core = fetchurl {
     url = "https://cli.moonbitlang.com/cores/core-latest.tar.gz";
-    hash = "sha256-eHrsonrv+QONfYoOvcXJsWK4qiZpbpZj8kqakQABrhY=";
+    hash = "sha256-ZhQl35u4/3yxSX3Tyyioc7Wkdvs7B8WHoiVFP/0KqbQ=";
   };
 
   dontConfigure = true;

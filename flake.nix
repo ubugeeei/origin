@@ -184,6 +184,13 @@
               inherit stdenvNoCC fetchurl xar cpio gzip lib;
             }) { };
 
+          # gam 7.43.4 pins chardet==5.2.0 while nixpkgs ships 6.0.0, so the
+          # Python runtime dependency check fails even though the tool itself
+          # runs fine against the newer chardet.
+          gam = prev.gam.overrideAttrs (_: {
+            dontCheckRuntimeDeps = true;
+          });
+
           gmail-open = prev.writeShellApplication {
             name = "gmail-open";
             text = ''open "https://mail.google.com/"'';
