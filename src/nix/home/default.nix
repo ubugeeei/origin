@@ -495,6 +495,7 @@ in
     bun
     codex
     rtk
+    worktrunk
     colima
     defaultbrowser
     docker-client
