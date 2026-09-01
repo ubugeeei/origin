@@ -137,9 +137,28 @@
               inherit lib stdenvNoCC;
               fontSrc = ./assets/fonts;
             }) { };
-          ush = inputs.ush.packages.${system}.default.overrideAttrs (_: {
-            doCheck = false;
-          });
+          # Codex and Claude Desktop launch the login shell straight from a
+          # sparse GUI environment: no managed PATH entries, no XDG_*, no
+          # STARSHIP_CONFIG. ush reads its config, aliases, and prompt once at
+          # startup, before any rc file runs, so the environment has to be
+          # repaired before the binary starts rather than from inside its rc.
+          # Ghostty already goes through the same repair in ~/.local/bin/ush.
+          ush =
+            let
+              base = inputs.ush.packages.${system}.default.overrideAttrs (_: {
+                doCheck = false;
+              });
+            in
+            prev.symlinkJoin {
+              name = "ush-with-terminal-env";
+              paths = [ base ];
+              nativeBuildInputs = [ prev.makeWrapper ];
+              postBuild = ''
+                rm "$out/bin/ush"
+                makeWrapper ${base}/bin/ush "$out/bin/ush" \
+                  --run '. "$HOME/.config/workstation/shell/terminal-env.sh" 2>/dev/null || true'
+              '';
+            };
           vite-plus = prev.callPackage ({
             stdenvNoCC,
             fetchurl,
