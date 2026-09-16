@@ -34,6 +34,10 @@ jobs:
         working-directory: dotfiles
         run: ./src/tnix/sync.sh
 
+      - name: Test repository commands and Pkl schema
+        working-directory: dotfiles
+        run: nix shell --inputs-from "path:$PWD" nixpkgs#bash nixpkgs#coreutils nixpkgs#jq nixpkgs#pkl nixpkgs#expect --command bash tests/repositories.sh
+
       - name: Check tnix workspace
         working-directory: dotfiles
         run: nix run "path:$TNIX_REPO#tnix" -- check ./src/tnix/workspace.tnix
@@ -41,3 +45,20 @@ jobs:
       - name: Check flake evaluation
         working-directory: dotfiles
         run: nix flake check --no-build "path:$PWD"
+
+      - name: Test Nix-managed repository commands
+        working-directory: dotfiles
+        run: |
+          command_dir="$(mktemp -d)"
+          trap 'rm -rf "$command_dir"' EXIT
+          for command_name in clone workspace; do
+            command_source="$(REPOSITORY_COMMAND="$command_name" nix build --no-link --print-out-paths --impure --expr '
+              let
+                repo = builtins.getFlake ("path:" + toString ./.);
+                configuration = (builtins.head (builtins.attrValues repo.homeConfigurations)).config;
+                command = builtins.getEnv "REPOSITORY_COMMAND";
+              in configuration.home.file.${".local/bin/" + command}.source
+            ')"
+            ln -s "$command_source" "$command_dir/$command_name"
+          done
+          REPOSITORY_COMMAND_DIR="$command_dir" nix shell --inputs-from "path:$PWD" nixpkgs#bash nixpkgs#coreutils nixpkgs#jq nixpkgs#pkl nixpkgs#expect --command bash tests/repositories.sh

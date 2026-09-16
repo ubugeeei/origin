@@ -6,272 +6,17 @@ let
   };
   workspaceRoot = shellEnv.workspaceRoot;
   legacyWorkspaceRoot = "${homeDir}/Code";
-  cloneScriptText = ''
+  repositoryTools = pkgs.runCommand "repository-tools" { } ''
+    mkdir -p "$out"
+    cp ${../../workspace/repos.sh} "$out/repos.sh"
+    cp ${../../workspace/metadata.jq} "$out/metadata.jq"
+    cp ${../../workspace/Workspace.pkl} "$out/Workspace.pkl"
+  '';
+  repositoryCommand = command: ''
     #!${pkgs.bash}/bin/bash
-    set -euo pipefail
-
-    usage_text='usage:
-      clone github <owner>/<repo> [alias]
-      clone gitlab <group>/<repo> [alias]
-      clone github.com/<owner>/<repo> [alias]
-      clone git@github.com:<owner>/<repo>.git [alias]
-
-    options:
-      -a, --alias <name>  clone into <repo>--<name>
-      -h, --help          show this help
-
-    notes:
-      - only GitHub and GitLab are supported
-      - only SSH remotes are accepted
-      - repositories are cloned under $GHQ_ROOT or $HOME/Source'
-
-    fail() {
-      local message=$1
-      local code=''${2:-64}
-      printf 'clone: %s\n' "$message" >&2
-      exit "$code"
-    }
-
-    print_usage() {
-      printf '%s\n' "$usage_text" >&2
-    }
-
-    maybe_normalize_host() {
-      case "$1" in
-        github | github.com)
-          printf 'github.com\n'
-          ;;
-        gitlab | gitlab.com)
-          printf 'gitlab.com\n'
-          ;;
-        *)
-          return 1
-          ;;
-      esac
-    }
-
-    parse_ssh_url() {
-      local spec=$1
-
-      if [[ $spec =~ ^git@(github\.com|gitlab\.com):(.+)$ ]]; then
-        printf '%s\t%s\n' "''${BASH_REMATCH[1]}" "''${BASH_REMATCH[2]}"
-        return 0
-      fi
-
-      return 1
-    }
-
-    parse_spec() {
-      local spec=$1
-      local host_part
-      local slug_part
-      local normalized_host
-
-      if parse_ssh_url "$spec"; then
-        return 0
-      fi
-
-      case "$spec" in
-        http://* | https://*)
-          fail "only SSH remotes are supported"
-          ;;
-      esac
-
-      [[ $spec == */* ]] || return 1
-
-      host_part=''${spec%%/*}
-      slug_part=''${spec#*/}
-      normalized_host=$(maybe_normalize_host "$host_part" || true)
-
-      if [[ -z $normalized_host ]]; then
-        fail "unsupported host: $host_part"
-      fi
-
-      printf '%s\t%s\n' "$normalized_host" "$slug_part"
-    }
-
-    validate_slug() {
-      local cleaned=$1
-      local part
-
-      cleaned=''${cleaned#/}
-      cleaned=''${cleaned%/}
-      cleaned=''${cleaned%.git}
-
-      if [[ -z $cleaned ]]; then
-        fail "repository path is required"
-      fi
-
-      if [[ $cleaned != */* ]]; then
-        fail "repository path must look like <owner>/<repo>"
-      fi
-
-      IFS='/' read -r -a parts <<<"$cleaned"
-      for part in "''${parts[@]}"; do
-        if [[ -z $part ]]; then
-          fail "repository path contains an empty segment"
-        fi
-
-        if [[ $part == "." || $part == ".." ]]; then
-          fail "repository path contains an invalid segment: $part"
-        fi
-      done
-
-      printf '%s\n' "$cleaned"
-    }
-
-    validate_alias() {
-      local alias_name=$1
-
-      if [[ -z $alias_name ]]; then
-        fail "alias must not be empty"
-      fi
-
-      if [[ $alias_name == */* ]]; then
-        fail "alias must not contain '/'"
-      fi
-
-      if [[ $alias_name == "." || $alias_name == ".." ]]; then
-        fail "alias must not be '.' or '..'"
-      fi
-    }
-
-    command_path() {
-      type -P -- "$1" 2>/dev/null || true
-    }
-
-    parse_host_and_slug() {
-      local pair=$1
-      IFS=$'\t' read -r PARSED_HOST PARSED_SLUG <<<"$pair"
-    }
-
-    main() {
-      local alias_name=""
-      local host=""
-      local slug=""
-      local first
-      local second
-      local normalized_host
-      local parsed
-      local root
-      local repo_name
-      local namespace
-      local local_name
-      local target
-      local remote
-      local git
-      local -a args=()
-
-      while [[ $# -gt 0 ]]; do
-        case "$1" in
-          -a | --alias)
-            [[ $# -ge 2 ]] || fail "missing value for $1"
-            [[ -z $alias_name ]] || fail "alias specified twice"
-            alias_name=$2
-            shift 2
-            ;;
-          -h | --help)
-            print_usage
-            exit 0
-            ;;
-          --)
-            shift
-            while [[ $# -gt 0 ]]; do
-              args+=("$1")
-              shift
-            done
-            ;;
-          -*)
-            fail "unknown option: $1"
-            ;;
-          *)
-            args+=("$1")
-            shift
-            ;;
-        esac
-      done
-
-      case ''${#args[@]} in
-        1)
-          parsed=$(parse_spec "''${args[0]}" || true)
-          if [[ -z $parsed ]]; then
-            print_usage
-            fail "missing host or repository path"
-          fi
-          parse_host_and_slug "$parsed"
-          host=$PARSED_HOST
-          slug=$PARSED_SLUG
-          ;;
-        2)
-          first=''${args[0]}
-          second=''${args[1]}
-          normalized_host=$(maybe_normalize_host "$first" || true)
-
-          if [[ -n $normalized_host ]]; then
-            host=$normalized_host
-            slug=$second
-          else
-            [[ -z $alias_name ]] || fail "alias specified twice"
-            parsed=$(parse_spec "$first" || true)
-            if [[ -z $parsed ]]; then
-              print_usage
-              fail "missing host or repository path"
-            fi
-            parse_host_and_slug "$parsed"
-            host=$PARSED_HOST
-            slug=$PARSED_SLUG
-            alias_name=$second
-          fi
-          ;;
-        3)
-          normalized_host=$(maybe_normalize_host "''${args[0]}" || true)
-          [[ -n $normalized_host ]] || fail "unsupported host: ''${args[0]}"
-          [[ -z $alias_name ]] || fail "alias specified twice"
-          host=$normalized_host
-          slug=''${args[1]}
-          alias_name=''${args[2]}
-          ;;
-        *)
-          print_usage
-          fail "unexpected arguments"
-          ;;
-      esac
-
-      slug=$(validate_slug "$slug")
-
-      if [[ -n $alias_name ]]; then
-        validate_alias "$alias_name"
-      fi
-
-      repo_name=''${slug##*/}
-      namespace=''${slug%/*}
-      local_name=$repo_name
-      if [[ -n $alias_name ]]; then
-        local_name="''${repo_name}--''${alias_name}"
-      fi
-
-      root=''${GHQ_ROOT:-"$HOME/Source"}
-      target="''${root}/''${host}/''${namespace}/''${local_name}"
-      remote="git@''${host}:''${slug}.git"
-
-      if [[ $host != "github.com" && $host != "gitlab.com" ]]; then
-        fail "only github.com and gitlab.com are supported"
-      fi
-
-      [[ ! -e $target ]] || fail "target already exists: $target"
-
-      git=$(command_path git)
-      [[ -n $git ]] || fail "git is not installed"
-
-      mkdir -p "$(dirname "$target")"
-
-      printf 'cloning %s\n' "$remote"
-      printf '  -> %s\n' "$target"
-
-      exec "$git" clone "$remote" "$target"
-    }
-
-    main "$@"
+    export WORKSPACE_PKL=${pkgs.pkl}/bin/pkl
+    export PATH="${lib.makeBinPath [ pkgs.coreutils pkgs.jq pkgs.git pkgs.openssh ]}:$PATH"
+    exec ${pkgs.bash}/bin/bash ${repositoryTools}/repos.sh ${command} "$@"
   '';
   raycastLauncher = "${homeDir}/.local/bin/launch-raycast";
   raycastWindowCommandLauncher = "${homeDir}/.local/bin/launch-raycast-window-command";
@@ -800,7 +545,12 @@ in
 
   home.file.".local/bin/clone" = {
     executable = true;
-    text = cloneScriptText;
+    text = repositoryCommand "clone";
+  };
+
+  home.file.".local/bin/workspace" = {
+    executable = true;
+    text = repositoryCommand "workspace";
   };
 
   home.file.".local/bin/g" = {

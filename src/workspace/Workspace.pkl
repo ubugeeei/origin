@@ -1,0 +1,72 @@
+/// Metadata for independent repositories grouped under a task.
+module origin.TaskWorkspace
+
+output {
+  renderer = new JsonRenderer {
+    omitNullProperties = false
+  }
+}
+
+schemaVersion: Int(this == 1) = 1
+task: Task
+repositories: Listing<Repository>(!isEmpty) = new {
+  default {
+    branch = task.branch
+  }
+}
+appendix: Appendix
+
+typealias TaskName = String(
+  !isBlank,
+  this != ".", this != "..",
+  !contains("/"),
+  !contains(Regex(#"[\x00-\x1f\x7f]"#))
+)
+
+typealias Branch = String(
+  !isEmpty,
+  this != "@",
+  !startsWith("-"), !startsWith("/"), !endsWith("/"), !endsWith("."),
+  !contains(".."), !contains("@{"), !contains("//"),
+  !contains(Regex(#"[\x00-\x20\x7f~^:?*\[\\]"#)),
+  split("/").every((part) -> !part.startsWith(".") && !part.endsWith(".lock"))
+)
+
+typealias Slug = String(
+  matches(Regex(#"[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)+"#)),
+  split("/").every((part) -> part != "." && part != ".."),
+  !endsWith(".git")
+)
+
+class Task {
+  /// Directory name and stable task identity.
+  name: TaskName
+  description: String = ""
+  /// Default task branch. Null keeps each remote's default branch.
+  branch: Branch? = null
+}
+
+class Repository {
+  host: "github.com" | "gitlab.com"
+  slug: Slug(host != "github.com" || split("/").length == 2)
+  /// Branch checked out from the remote before starting the task.
+  baseBranch: Branch? = null
+  /// Intended working branch; defaults to the task-wide branch.
+  branch: Branch? = null
+  /// Starting commit, or null for an empty remote.
+  initialHead: String(matches(Regex(#"[0-9a-f]{40}([0-9a-f]{24})?"#)))? = null
+  note: String = ""
+  fixed path: String = "\(host)/\(slug)"
+  fixed remote: String = "git@\(host):\(slug).git"
+}
+
+class Appendix {
+  notes: Listing<Note>
+  /// Named references such as an issue, design document, or pull request.
+  links: Mapping<String, String>
+}
+
+class Note {
+  title: String = ""
+  body: String
+}

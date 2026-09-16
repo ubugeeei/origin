@@ -1,0 +1,37 @@
+amends "../Workspace.pkl"
+
+task {
+  name = "payment-flow"
+  description = "Update the frontend and API together."
+  branch = "codex/payment-flow"
+}
+
+repositories {
+  new {
+    host = "github.com"
+    slug = "your-user/frontend"
+    baseBranch = "main"
+    note = "Update the client after the API contract is agreed."
+  }
+  new {
+    host = "gitlab.com"
+    slug = "my-group/platform/api"
+    baseBranch = "develop"
+    branch = "codex/payment-api"
+  }
+}
+
+appendix {
+  notes {
+    new {
+      title = "Compatibility"
+      body = """
+        Keep the existing request format working during the transition.
+        Verify both repositories before merging either change.
+        """
+    }
+  }
+  links {
+    ["design"] = "https://example.com/payment-flow"
+  }
+}

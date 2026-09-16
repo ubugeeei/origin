@@ -85,7 +85,9 @@ Implementation source now lives under `src/`; typed Nix source-of-truth is under
 |   |-- nix/
 |   |   `-- home/            # remaining handwritten Home Manager entrypoint
 |   |-- templates/            # tracked helper templates such as machine.local.env.example
-|   `-- ush/                  # source-only .ush implementations
+|   |-- ush/                  # source-only .ush implementations
+|   `-- workspace/            # shared clone and task workspace commands
+|-- tests/                    # offline repository-management regression tests
 |-- _legacy/                  # POSIX bootstrap entrypoints and wrappers
 `-- docs/                     # onboarding and operational notes
 ```
