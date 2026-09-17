@@ -80,6 +80,7 @@ let
     lg = "eza -lah --git";
     ll = "eza -lah --git";
     lt = "eza --tree --level=2";
+    pk = "vp";
     t = "tmux attach -t main || tmux new -s main";
     v = "nvim";
     vc = "code";
@@ -87,6 +88,10 @@ let
     vpd = "vp dev";
     vpt = "vp test";
     ze = "zed";
+    "ファルコン" = "vp";
+    "ファルコン・テスト" = "vp test";
+    "ファルコン・ローンチ" = "vp dev";
+    "ファルコン・ラーン" = "vp run";
   };
   ushShellAliases = builtins.removeAttrs commonShellAliases [
     "g"
