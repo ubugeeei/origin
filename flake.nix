@@ -126,8 +126,9 @@
               x86_64-linux = "sha256-p3sxW9IyNusblKIARD8FTFz7qABr5EjihE6SNGxi6/c=";
             };
           };
-          origin-toolchains = prev.symlinkJoin {
+          origin-toolchains = prev.buildEnv {
             name = "origin-toolchains";
+            pathsToLink = [ "/bin" ];
             paths = with final; [
               bun deno go jujutsu just uv dprint git-cliff wasm-pack
               temurin-bin-21 pkl delstack markgate mise vite-plus

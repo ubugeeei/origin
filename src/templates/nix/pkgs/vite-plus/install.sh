@@ -14,4 +14,9 @@ else
   ln -s vp "$out/bin/vite-plus"
 fi
 
+# Home Manager owns setup and points current/bin/vp at this store path.
+# Without this upstream marker, the first invocation bootstraps a second,
+# npm-managed CLI and delegates to it, bypassing the Nix version pin.
+touch "$out/bin/.vp-setup-complete"
+
 runHook postInstall

@@ -584,6 +584,7 @@ in
 
   home.activation.setupVitePlus = lib.hm.dag.entryAfter [ "createLanguageToolDirs" ] ''
     vite_plus_home="$HOME/.vite-plus"
+    export VITE_PLUS_HOME="$vite_plus_home"
     mkdir -p "$vite_plus_home/current/bin"
     ln -sfn "${pkgs.vite-plus}/bin/vp" "$vite_plus_home/current/bin/vp"
     cat > "$vite_plus_home/current/package.json" <<'EOF'
