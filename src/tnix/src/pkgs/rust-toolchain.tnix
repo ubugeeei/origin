@@ -1,0 +1,26 @@
+let
+  package :: dynamic;
+  # @tnix-ignore
+  package = (args :: { pkgs :: dynamic; nixpkgs :: dynamic; rustOverlay :: dynamic; }):
+    let
+      pkgs = args.pkgs;
+      defaultToolchain = pkgs.rust-bin.stable."1.98.1".default.override {
+        extensions = [ "rust-src" "rust-analyzer" "llvm-tools" ];
+        targets = [ "wasm32-unknown-unknown" "wasm32-wasip2" ];
+      };
+      expression = pkgs.replaceVars ../../src/templates/nix/pkgs/rust-toolchain/toolchain.nix {
+        nixpkgs = args.nixpkgs;
+        rustOverlay = args.rustOverlay;
+        system = pkgs.stdenv.hostPlatform.system;
+      };
+      script = pkgs.replaceVars ../../src/templates/nix/pkgs/rust-toolchain/dispatch.py {
+        python = pkgs.python3;
+        nix = pkgs.nix;
+        rustHost = pkgs.stdenv.hostPlatform.rust.rustcTarget;
+        defaultToolchain = defaultToolchain;
+        expression = expression;
+      };
+    in
+    pkgs.runCommand "origin-rust-toolchain" { } "mkdir -p $out/bin; for command in cargo rustc rustdoc rustfmt cargo-fmt clippy-driver cargo-clippy rust-analyzer cargo-miri; do install -m755 ${script} $out/bin/$command; done";
+in
+package

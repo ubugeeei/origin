@@ -520,9 +520,8 @@ in
     procs
     sd
     choose
-    cargo
     cargo-edit
-    clippy
+    origin-toolchains
     delve
     vite-plus
     go
@@ -532,15 +531,22 @@ in
     # gopls and gotools both ship bin/modernize; let gopls win that one file
     # while keeping goimports and the rest of gotools.
     (lib.lowPrio gotools)
-    rust-analyzer
     xh
     yq-go
     zig
-    rustc
-    rustfmt
   ];
 
   home.sessionVariables = shellEnv.sessionVariables;
+
+  # A narrow, Nix-owned bin directory wins over legacy user installations,
+  # including global npm Pkl and vp's optional Bun shim.
+  home.file.".local/share/origin/toolchains".source = pkgs.origin-toolchains;
+  home.file.".config/mise/config.toml".text = ''
+    [settings]
+    enable_tools = []
+    auto_install = false
+  '';
+
 
   home.shellAliases = commonShellAliases;
 
@@ -586,8 +592,11 @@ in
       "private": true
     }
     EOF
-    ${pkgs.vite-plus}/bin/vp env setup >/dev/null
-    ${pkgs.vite-plus}/bin/vp env on >/dev/null
+    ${pkgs.vite-plus}/bin/vp env setup --refresh >/dev/null
+    ${pkgs.vite-plus}/bin/vp env on node >/dev/null
+    ${pkgs.vite-plus}/bin/vp env on pnpm >/dev/null
+    ${pkgs.vite-plus}/bin/vp env off bun >/dev/null
+    ${pkgs.vite-plus}/bin/vp env default 24.14.0 pnpm@10.31.0 >/dev/null
   '';
 
   home.activation.installAzooKeyUser = lib.hm.dag.entryAfter [ "setupVitePlus" ] ''
@@ -667,21 +676,22 @@ in
   home.file.".config/workstation/shell/terminal-env.sh".text = ''
     export SHELL="${interactiveUshPath}"
 
-    prepend_path() {
-      case ":''${PATH:-}:" in
-        *":$1:"*) ;;
-        *)
-          if [ -n "''${PATH:-}" ]; then
-            PATH="$1:$PATH"
-          else
-            PATH="$1"
-          fi
-          export PATH
-          ;;
+    # Rebuild our managed prefix on every source, retaining project/Nix devShell
+    # additions while removing the previous mise/legacy profile ordering.
+    origin_remaining_path=""
+    origin_paths="''${PATH:-}:"
+    while [ -n "$origin_paths" ]; do
+      origin_path="''${origin_paths%%:*}"
+      origin_paths="''${origin_paths#*:}"
+      case "$origin_path" in
+        ${builtins.concatStringsSep "|" (map (path: "\"${path}\"") shellEnv.managedPathEntries)}|"$HOME/.local/share/mise/shims"|"$HOME/.local/share/mise/installs/"*) ;;
+        *) origin_remaining_path="''${origin_remaining_path:+$origin_remaining_path:}$origin_path" ;;
       esac
-    }
-
-    ${builtins.concatStringsSep "\n" (map (path: "prepend_path \"${path}\"") (lib.reverseList shellEnv.managedPathEntries))}
+    done
+    export PATH="''${origin_remaining_path:+$origin_remaining_path:}${builtins.concatStringsSep ":" shellEnv.managedPathEntries}"
+    export MISE_ENABLE_TOOLS=""
+    export MISE_AUTO_INSTALL=0
+    unset origin_remaining_path origin_paths origin_path
 
     # Some embedded terminals start shells without TERM. Fall back so terminfo
     # consumers like clear, tput, fzf, and tmux can still work.

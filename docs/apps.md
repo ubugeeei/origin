@@ -64,7 +64,7 @@ These are exposed directly into `/Applications` after `darwin-rebuild switch`.
 - `microsoft-edge` is custom-packaged in this repo from Microsoft's macOS pkg.
 - `azooKey` is now custom-packaged in this repo, but input-source enablement still needs macOS settings plus logout/login.
 - `vite-plus` is custom-packaged in this repo from the official platform-specific CLI package for the active OS and architecture, and Home Manager prepares `~/.vite-plus` so `vp env` can own Node.js shims.
-- `mise` is installed from nixpkgs and its shell integration plus `~/.local/share/mise/shims` PATH entry are managed by Home Manager.
+- `mise` is installed from nixpkgs as a task runner. Tool management and auto-install are disabled; its shims are removed from PATH. Bun, Deno, Go, Rust, Java, Haskell, uv, jj, just, dprint, git-cliff, wasm-pack, and Pkl are managed by Nix. delstack and markgate are pinned upstream binary packages. Node.js and pnpm are managed by the Nix-packaged Vite+ CLI.
 - `moonbit` is custom-packaged in this repo from MoonBit's public macOS arm64 CLI and core downloads. Upstream currently serves those downloads via `latest` aliases, so the package is pinned by hash and needs a hash refresh when MoonBit rotates the artifact.
 - `Cursor` comes from the nixpkgs `code-cursor` package, so its version tracks whatever nixpkgs is pinned to in `flake.lock`.
 - `Claude` is custom-packaged in this repo from Anthropic's public universal macOS build. The file name is content-addressed, so both the version and the build id are pinned in `src/tnix/src/pkgs/claude-desktop.tnix`. Resolve the current pair with `curl -sI https://api.anthropic.com/api/desktop/darwin/universal/dmg/latest/redirect` or `https://downloads.claude.ai/releases/darwin/universal/RELEASES.json`.

@@ -7,6 +7,8 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    rust-overlay.url = "github:oxalica/rust-overlay";
+    rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
     ush.url = "github:ubugeeei/ush";
     ush.inputs.nixpkgs.follows = "nixpkgs";
   };
@@ -31,23 +33,22 @@
           bunBin = "${bunInstall}/bin";
           moonHome = "${homeDir}/.moon";
           moonBin = "${moonHome}/bin";
-          miseShims = "${homeDir}/.local/share/mise/shims";
           pnpmHome = "${homeDir}/Library/pnpm";
           vitePlusHome = "${homeDir}/.vite-plus";
           managedPathEntries = [
+            "${homeDir}/.local/share/origin/toolchains/bin"
             "${vitePlusHome}/bin"
             "${homeDir}/.local/bin"
+            "/etc/profiles/per-user/${username}/bin"
+            "/run/current-system/sw/bin"
+            "${homeDir}/.local/state/nix/profiles/home-manager/home-path/bin"
+            "${homeDir}/.nix-profile/bin"
+            "/nix/var/nix/profiles/default/bin"
             moonBin
-            miseShims
             "${cargoHome}/bin"
             goBin
             bunBin
             pnpmHome
-            "${homeDir}/.local/state/nix/profiles/home-manager/home-path/bin"
-            "${homeDir}/.nix-profile/bin"
-            "/nix/var/nix/profiles/default/bin"
-            "/etc/profiles/per-user/${username}/bin"
-            "/run/current-system/sw/bin"
             "/usr/local/bin"
             "/usr/bin"
             "/bin"
@@ -62,6 +63,8 @@
             GHQ_ROOT = workspaceRoot;
             GOBIN = goBin;
             GOPATH = goPath;
+            MISE_ENABLE_TOOLS = "";
+            MISE_AUTO_INSTALL = "0";
             MOON_HOME = moonHome;
             PNPM_HOME = pnpmHome;
             STARSHIP_CONFIG = "${homeDir}/.config/starship.toml";
@@ -84,7 +87,53 @@
         };
       homeConfigurationName = "${username}@${machine.networking.localHostName}";
       overlays = [
+        inputs.rust-overlay.overlays.default
         (final: prev: {
+          origin-rust-toolchain = import ./generated/pkgs/rust-toolchain.nix {
+            pkgs = final;
+            inherit nixpkgs;
+            rustOverlay = inputs.rust-overlay;
+          };
+          # Keep existing mise tasks while letting Nix/vp own every tool.
+          mise = prev.symlinkJoin {
+            name = "mise-tasks-only-${prev.mise.version}";
+            paths = [ prev.mise ];
+            nativeBuildInputs = [ prev.makeWrapper ];
+            postBuild = ''
+              wrapProgram "$out/bin/mise" \
+                --set MISE_ENABLE_TOOLS "" --set MISE_AUTO_INSTALL 0
+            '';
+          };
+          delstack = import ./generated/pkgs/go-to-k-tool.nix {
+            pkgs = final;
+            name = "delstack";
+            version = "2.11.1";
+            hashes = {
+              aarch64-darwin = "sha256-lH13EeZ2iSw87YbtNbA3+s64S4Z8xhnNbEVR3g6zhRI=";
+              x86_64-darwin = "sha256-MhKCrFCgxa8U0eKANACdU29HlTjx2yap8yQQ12Vz2RM=";
+              aarch64-linux = "sha256-mFlwqWzXFFaW2mH0Pu/J/kto4+qA5M4Z2TW0CxWoAYI=";
+              x86_64-linux = "sha256-s/DDbSxuWzvNfsa6OME7ibVXUpdKXpu7lw+MX78+s+0=";
+            };
+          };
+          markgate = import ./generated/pkgs/go-to-k-tool.nix {
+            pkgs = final;
+            name = "markgate";
+            version = "0.3.3";
+            hashes = {
+              aarch64-darwin = "sha256-yG0YDRWNpZVTld+No0kvU0+RuZfLp33+p1cy1VhF8ak=";
+              x86_64-darwin = "sha256-aa1NqsY94EJ642H0ZY4RWS5fWwfJxptzphtNXV+G0J4=";
+              aarch64-linux = "sha256-KiiFztmG+uev+HzJCOqxsvD/6JRsi2Qmj4idEb9Ka08=";
+              x86_64-linux = "sha256-p3sxW9IyNusblKIARD8FTFz7qABr5EjihE6SNGxi6/c=";
+            };
+          };
+          origin-toolchains = prev.symlinkJoin {
+            name = "origin-toolchains";
+            paths = with final; [
+              bun deno go jujutsu just uv dprint git-cliff wasm-pack
+              temurin-bin-21 pkl delstack markgate mise vite-plus
+              haskell.compiler.ghc96 cabal-install stack origin-rust-toolchain
+            ];
+          };
           azookey-mac = prev.callPackage ({
             stdenvNoCC,
             fetchurl,
@@ -214,7 +263,7 @@
     in
     {
       packages.${system} = {
-        inherit (pkgs) moonbit;
+        inherit (pkgs) moonbit origin-toolchains origin-rust-toolchain delstack markgate vite-plus;
         inherit (pkgs) ush;
       };
 

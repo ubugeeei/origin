@@ -1,0 +1,32 @@
+let
+  package :: dynamic;
+  # @tnix-ignore
+  package = (args :: { pkgs :: dynamic; name :: String; version :: String; hashes :: dynamic; }):
+    let
+      pkgs = args.pkgs;
+      platform = pkgs.stdenvNoCC.hostPlatform;
+      systemName = if platform.isDarwin then "Darwin" else "Linux";
+      arch = if platform.isAarch64 then "arm64" else "x86_64";
+      name = args.name;
+      version = args.version;
+    in
+    pkgs.stdenvNoCC.mkDerivation {
+      pname = name;
+      version = version;
+      src = pkgs.fetchurl {
+        url = "https://github.com/go-to-k/${name}/releases/download/v${version}/${name}_${version}_${systemName}_${arch}.tar.gz";
+        hash = args.hashes.${platform.system};
+      };
+      sourceRoot = ".";
+      dontConfigure = true;
+      dontBuild = true;
+      installPhase = "runHook preInstall; install -Dm755 ${name} $out/bin/${name}; runHook postInstall";
+      meta = {
+        homepage = "https://github.com/go-to-k/${name}";
+        sourceProvenance = [ pkgs.lib.sourceTypes.binaryNativeCode ];
+        license = pkgs.lib.licenses.mit;
+        platforms = [ "aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux" ];
+      };
+    };
+in
+package

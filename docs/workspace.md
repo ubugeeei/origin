@@ -55,7 +55,7 @@ git clone git@gitlab.com:<group>/<repo>.git "$HOME/Source/gitlab.com/<group>/<re
 - `src/ush/` is source-only and now holds the `.ush` implementation for every repo command, while `_legacy/*.sh` keeps shell entrypoints and compatibility wrappers; bootstrap-oriented entrypoints stay POSIX `sh`, and operational helpers such as `apply`, `clone`, `doctor`, `gc`, `init-repo`, `remove-unused-apple-apps`, `set-default-browser`, and `fetch-github-profile-icon` run through `ush`
 - prompt: starship
 - runtime manager: Vite+ (`vp env`)
-- secondary runtime manager: mise (installed, but not auto-activated)
+- language runtimes and CLI tools: Nix, through origin; mise is retained only as a task runner
 - container runtime: Colima + Docker CLI
 
 ## Docker first run
@@ -76,5 +76,9 @@ docker version
 - `ush` is the default shell here. For project pins, use `.node-version` or `vp env exec ...`.
 - If you want session-local `vp env use <version>` behavior, open a zsh session for that workflow.
 - Standard user-managed toolchain bins such as `~/.moon/bin`, `~/.cargo/bin`, `~/go/bin`, `~/.bun/bin`, and `~/Library/pnpm` are also on PATH when those directories exist.
-- `mise` is available too, and `~/.local/share/mise/shims` is kept on PATH for shell and GUI sessions.
-- Auto-activation is intentionally off so `vp env` remains the default Node.js flow. If you want `mise activate` behavior in a shell, opt into it manually for that shell session.
+- The Nix-owned `~/.local/share/origin/toolchains/bin` precedes legacy user installations and Vite+ shims, so Bun, Go, Rust, Pkl, and other managed commands consistently use Nix. Node.js and pnpm are provided by Vite+; neither is installed as a global Nix package.
+- `mise run` remains available for existing tasks, with all tool management disabled (`MISE_ENABLE_TOOLS=`). Old project `[tools]` entries cannot download or override the Nix/vp environment.
+- Rust reads the nearest `rust-toolchain.toml` or legacy `rust-toolchain` file, including components and targets. `cargo +<channel>` and `RUSTUP_TOOLCHAIN` are supported. origin uses its locked rust-overlay to build the requested toolchain into the Nix store and keeps a GC root under `$XDG_STATE_HOME/origin/rust-toolchains`. The fallback is Rust 1.98.1 with WASM targets.
+- Haskell uses Nix-managed GHC 9.6, Cabal, and Stack. Remove hardcoded `~/.ghcup/bin` additions from project task scripts when migrating them.
+- Nix Rust toolchains are immutable: add components/targets to the project toolchain file instead of running `rustup component add` or `rustup target add`. Local compiler builds can still be selected using `[toolchain].path`.
+- See [toolchain migration](toolchains.md) for first-apply and verification details.

@@ -15,11 +15,11 @@ let
   macPackages = {
     aarch64 = {
       packageName = "darwin-arm64";
-      hash = "sha512-qC/avDevnPTCOBQe8oRZnfMxjbmickIQ8T6PaDHd245I24IbBXrD0Qie6gCpFF1SlHYGb+OA6RQKVYrLJTrC5Q==";
+      hash = "sha512-C7O1kN10VYhBPmRYV/lYxC5HRGJtw4JimuwLdgggEpo37ko8OsIkMcfLVDB1HFCioA8gpO4jW81oBMvpNWrpqQ==";
     };
     x86_64 = {
       packageName = "darwin-x64";
-      hash = "sha512-tJdYieVlikJb1UR5/CWjGLe6unagCHpftxPqtH4pRnhof4Hx7iXK12f5xYGMNsqkw4eUVch24a93EDyMdlzJDA==";
+      hash = "sha512-yN9GRaGvUzV8WrPwtifomVEhOaHmORLpihlr4SJOWAkYjWj0+6hG4aKg8UxUidNj7YLTkMNN15IBXN/29kE/Zw==";
     };
   };
 
@@ -27,21 +27,21 @@ let
     aarch64 = {
       gnu = {
         packageName = "linux-arm64-gnu";
-        hash = "sha512-0MnV4y59poG/gj8b5M2SgxqIBPgVAvDGd2c8SnPtd7r/vvmAXx3Aoe5reSDBwLZ/X+q4GTiBNEAS6UeGXcIQyQ==";
+        hash = "sha512-aWT2U4SN3w8w+AkgPCL98NyesnS0dLUPz9MLX9UvwOXCdDEsDLghhnsKWh7kD+6YAC6W3lEpcmZGD6grcUTOwg==";
       };
       musl = {
         packageName = "linux-arm64-musl";
-        hash = "sha512-AgnDXxUJBCmnN8XahtI7k/urGVSBUrF033qiHBEvAkQjBdaQZKyBToUcBS0svDftfvYDduQ4JTYwUAdie4KA9Q==";
+        hash = "sha512-GpDkSTU+ks3hq/uaQ5RBVcrBP0K+EjwWdoWvmSqoX031oNpiWyCj9b/kmgJQUclyDj+gmVA8veFnwMUYwFfJIA==";
       };
     };
     x86_64 = {
       gnu = {
         packageName = "linux-x64-gnu";
-        hash = "sha512-KAkMZTfsAdGq/1WfuLrZxy1nA9Q+rR5Vq9HEsVM7p4HZ/sMpqM5vPgmHdd0lZKm4pp/1RLQ87p0Vnn15dUFn5Q==";
+        hash = "sha512-WNQaEN1S5MOQpfDH45Gz6wqBL1vxUfTRTCS4k8HA7UyIT1B6wkik1+ONIlxXQ7pctsTlxl/XSqkhY8zrlppyxw==";
       };
       musl = {
         packageName = "linux-x64-musl";
-        hash = "sha512-CekRYyZN3Vbt3t14lrxzsRWIqXRQLJzuJO1YLu90Vk3YC0CpM2fRBofQgz7FLGp3nrAL9K0BFz4CMAn03TnrpA==";
+        hash = "sha512-ykRBudkE60heBiBZmSB8BHup4qdsTQyeGSu+7+BVGTSvL/28Z1S4SJvsnBxQlD1EeEUDRgqD51oheHzlzXQc9Q==";
       };
     };
   };
@@ -49,11 +49,11 @@ let
   winPackages = {
     aarch64 = {
       packageName = "win32-arm64-msvc";
-      hash = "sha512-KizOPYpWR/hXgKkhJ7kyTmbBjj/zGYSne+ushhgKPSg43tC09g3NPc1lNjoBTUeli49OU7hpfOfp8MufY1OADg==";
+      hash = "sha512-3TbW1o56DlY/y23qauEztnTvw+OMdGitVXnk2Qba7sr5NdP6mUeAyfA9lDpc45eQxvkRtyggKcBK4D7nmGNzeA==";
     };
     x86_64 = {
       packageName = "win32-x64-msvc";
-      hash = "sha512-FFYybcM1a0ADPDYK/sQCq5QAC8KZUjdixhzLbW3VY57kw5G1KnvC/DqnsHoLAXJ6now/sWK2+Rtl9LJkso31TA==";
+      hash = "sha512-hoTsOGZmFKv7PQ7/VBoC3mo4x+fOgHMil6w0Jvvw8FZnkqlB9pjIUfj9nebn2hTINpKBrbD14kIDYjj8dDMkZQ==";
     };
   };
 
@@ -113,7 +113,7 @@ let
 in
 stdenvNoCC.mkDerivation rec {
   pname = "vite-plus";
-  version = "0.3.0";
+  version = "0.3.3";
 
   src = fetchurl {
     url = "https://registry.npmjs.org/@voidzero-dev/vite-plus-cli-${packageName}/-/vite-plus-cli-${packageName}-${version}.tgz";

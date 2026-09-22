@@ -41,3 +41,30 @@ jobs:
       - name: Check flake evaluation
         working-directory: dotfiles
         run: nix flake check --no-build "path:$PWD"
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Test Rust toolchain selection
+        working-directory: dotfiles
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Build managed toolchains
+        working-directory: dotfiles
+        run: nix build --out-link result-toolchains "path:$PWD#origin-toolchains"
+
+      - name: Smoke test managed commands and task-only mise
+        working-directory: dotfiles
+        run: |
+          set -euo pipefail
+          for command in bun deno jj just uv dprint git-cliff wasm-pack pkl vp cargo rustc ghc cabal stack; do
+            ./result-toolchains/bin/"$command" --version
+          done
+          ./result-toolchains/bin/go version
+          ./result-toolchains/bin/java -version
+          ./result-toolchains/bin/delstack --help >/dev/null
+          ./result-toolchains/bin/markgate --help >/dev/null
+          project=$(mktemp -d)
+          printf '[tools]\nnode = "0.0.0"\n"ubi:go-to-k/markgate" = "0.0.0"\n' > "$project/mise.toml"
+          test "$(./result-toolchains/bin/mise -C "$project" ls --current --json)" = '{}'

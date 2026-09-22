@@ -4,3 +4,4 @@
 /machine/local.env
 /assets/fonts/Nova*
 /generated/
+__pycache__/

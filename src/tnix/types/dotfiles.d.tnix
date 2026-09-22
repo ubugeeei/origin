@@ -90,6 +90,7 @@ type DotfilesFlakeInputs = {
   nix-darwin :: NixDarwinFlake;
   home-manager :: HomeManagerFlake;
   ush :: dynamic;
+  rust-overlay :: dynamic;
 };
 
 type DotfilesFlakeOutputs = {
@@ -107,6 +108,7 @@ type DotfilesFlake = {
     nix-darwin :: NixFlakeInputSpec;
     home-manager :: NixFlakeInputSpec;
     ush :: NixFlakeInputSpec;
+    rust-overlay :: NixFlakeInputSpec;
   };
   outputs :: DotfilesFlakeInputs -> DotfilesFlakeOutputs;
 };
