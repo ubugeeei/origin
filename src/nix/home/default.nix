@@ -344,10 +344,10 @@ let
     quick-terminal-screen = main
     quick-terminal-size = 50%
     shell-integration = detect
-    background = #121212
+    background = #181818
     foreground = #d8dee9
     cursor-color = #7bb8ac
-    cursor-text = #121212
+    cursor-text = #181818
     selection-background = #3e4c56
     selection-foreground = #ebeff5
     cursor-style = bar

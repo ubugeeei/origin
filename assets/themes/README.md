@@ -1,7 +1,7 @@
 # Terminal appearance
 
 `orca-ubugeeei.json` contains the Orca custom theme and typography matching
-the Ghostty configuration: `#121212`, soft teal accents, JetBrains Mono, and
+the Ghostty configuration: `#181818`, soft teal accents, JetBrains Mono, and
 14-point text. Merge its `theme` into `terminalCustomThemes` and its `settings`
 into the local Orca profile while Orca is closed; editing the profile while
 running would be overwritten by the application's in-memory settings.

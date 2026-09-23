@@ -21,10 +21,10 @@
       "brightMagenta": "#d7c1e3",
       "brightCyan": "#9fcfc3",
       "brightWhite": "#ebeff5",
-      "background": "#121212",
+      "background": "#181818",
       "foreground": "#d8dee9",
       "cursor": "#7bb8ac",
-      "cursorAccent": "#121212",
+      "cursorAccent": "#181818",
       "selectionBackground": "#3e4c56",
       "selectionForeground": "#ebeff5"
     },
@@ -39,6 +39,6 @@
     "terminalLineHeight": 1.08,
     "terminalCursorStyle": "bar",
     "terminalCursorBlink": false,
-    "terminalDividerColorDark": "#121212"
+    "terminalDividerColorDark": "#181818"
   }
 }
