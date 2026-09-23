@@ -37,7 +37,7 @@ class ShellStartup(unittest.TestCase):
             )
         (self.home / ".config/starship.toml").write_text("""
 add_newline = false
-format = "$directory$line_break$character"
+format = "$directory  $character"
 [directory]
 format = "[$path]($style)"
 style = "#d8dee9"
@@ -83,6 +83,7 @@ error_symbol = '[\\( ◠ ‿ ◠\\)و](#d98992)'
         try:
             read_until("◠ ‿ ◠".encode())
             self.assertIn(b"38;2;123;184;172", output)
+            self.assertIn(b"~", output)
             os.write(master, b"false\r")
             read_until(b"38;2;217;137;146")
         finally:

@@ -719,6 +719,17 @@ in
     export MISE_AUTO_INSTALL=0
     unset origin_remaining_path origin_paths origin_path
 
+    # Codex and Claude Desktop start the login shell from a sparse GUI
+    # environment, so the managed session variables are missing there as well.
+    # ush resolves its prompt from STARSHIP_CONFIG once at startup, before any
+    # rc file runs, which is why its prompt falls back to the built-in default
+    # without this. An inherited value always wins.
+    ${builtins.concatStringsSep "\n" (lib.mapAttrsToList (name: value: ''
+      if [ -z "''${${name}:-}" ]; then
+        export ${name}="${value}"
+      fi
+    '') shellEnv.sessionVariables)}
+
     # Some embedded terminals start shells without TERM. Fall back so terminfo
     # consumers like clear, tput, fzf, and tmux can still work.
     if [ -z "''${TERM:-}" ]; then

@@ -17,6 +17,10 @@ let
       runFastfetchOnce :: String;
       runFastfetchOnce = builtins.readFile ../../src/templates/nix/home/shell/run-fastfetch-once.sh;
 
+      starshipSettings :: dynamic;
+      # @tnix-ignore
+      starshipSettings = builtins.fromTOML (builtins.readFile ../../src/templates/nix/home/shell/starship.toml);
+
       zshInit :: String;
       zshInit = "if [ -f $HOME/.config/workstation/shell/terminal-env.sh ]; then . $HOME/.config/workstation/shell/terminal-env.sh; fi; if command -v run-fastfetch-once >/dev/null 2>&1; then run-fastfetch-once; fi";
 
@@ -77,37 +81,7 @@ let
           enableBashIntegration = true;
           enableNushellIntegration = false;
           enableZshIntegration = true;
-          settings = {
-            add_newline = true;
-            command_timeout = 1000;
-            format = "$directory$git_branch$line_break$character";
-            right_format = "";
-
-            character = {
-              success_symbol = "[\\( ◠ ‿ ◠\\)و](#7bb8ac)";
-              error_symbol = "[\\( ◠ ‿ ◠\\)و](#d98992)";
-              vimcmd_symbol = "[❮](#c6abd6)";
-            };
-
-            directory = {
-              home_symbol = "~";
-              read_only = " 󰌾";
-              style = "#d8dee9";
-              truncation_length = 3;
-              truncation_symbol = "…/";
-              format = "[$path]($style)[$read_only]($read_only_style)";
-            };
-
-            git_branch = {
-              style = "#87909f";
-              symbol = " ";
-              format = " [$symbol$branch]($style)";
-            };
-
-            git_status = {
-              disabled = true;
-            };
-          };
+          settings = starshipSettings;
         };
 
         tmux = {
