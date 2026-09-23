@@ -187,8 +187,13 @@
               inherit lib stdenvNoCC;
               fontSrc = ./assets/fonts;
             }) { };
-          ush = inputs.ush.packages.${system}.default.overrideAttrs (_: {
+          ush = inputs.ush.packages.${system}.default.overrideAttrs (old: {
             doCheck = false;
+            patches = (old.patches or [ ]) ++ [ ./patches/ush-session-and-prompt.patch ];
+            postPatch = (old.postPatch or "") + ''
+              substituteInPlace crates/ush_shell/src/prompt.rs \
+                --replace-fail '@originStarship@' '${final.starship}/bin/starship'
+            '';
           });
           vite-plus = prev.callPackage ({
             stdenvNoCC,

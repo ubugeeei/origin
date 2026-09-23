@@ -58,6 +58,12 @@ jobs:
         working-directory: dotfiles
         run: nix build --out-link result-toolchains "path:$PWD#origin-toolchains"
 
+      - name: Build and test GUI shell startup and prompt
+        working-directory: dotfiles
+        run: |
+          nix build --out-link result-ush "path:$PWD#ush"
+          python3 tests/smoke_shell.py ./result-ush/bin/ush -v
+
       - name: Smoke test managed commands and task-only mise
         working-directory: dotfiles
         run: |

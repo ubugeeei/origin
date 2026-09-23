@@ -320,6 +320,7 @@ let
     shell = {
       historySize = 1000000;
       interaction = true;
+      profileFiles = [ "rc.sh" ];
       rcFiles = [ "rc.sh" ];
       stylishDefault = false;
     };
@@ -331,9 +332,10 @@ let
     env = XDG_CACHE_HOME=${homeDir}/.cache
     env = XDG_DATA_HOME=${homeDir}/.local/share
     env = XDG_STATE_HOME=${homeDir}/.local/state
-    font-family = Menlo
     font-family = "JetBrainsMono Nerd Font Mono"
-    font-size = 15
+    font-size = 14
+    font-thicken = false
+    adjust-cell-height = 8%
     keybind = global:shift+space=toggle_quick_terminal
     keybind = shift+enter=text:\x1b\r
     macos-option-as-alt = true
@@ -342,10 +344,33 @@ let
     quick-terminal-screen = main
     quick-terminal-size = 50%
     shell-integration = detect
-    theme = "GitHub Dark High Contrast"
+    background = #282c34
+    foreground = #d8dee9
+    cursor-color = #7bb8ac
+    cursor-text = #282c34
+    selection-background = #3e4c56
+    selection-foreground = #ebeff5
+    cursor-style = bar
+    cursor-style-blink = false
+    palette = 0=#282c34
+    palette = 1=#d98992
+    palette = 2=#a7c99a
+    palette = 3=#e5c08b
+    palette = 4=#91b6d5
+    palette = 5=#c6abd6
+    palette = 6=#7bb8ac
+    palette = 7=#d8dee9
+    palette = 8=#87909f
+    palette = 9=#e7a1a8
+    palette = 10=#bed7b3
+    palette = 11=#eed1a9
+    palette = 12=#b1cce2
+    palette = 13=#d7c1e3
+    palette = 14=#9fcfc3
+    palette = 15=#ebeff5
     window-inherit-working-directory = true
-    window-padding-x = 12
-    window-padding-y = 12
+    window-padding-x = 18
+    window-padding-y = 14
   '';
   mkKarabinerShellCommandRule =
     {

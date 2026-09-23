@@ -1,0 +1,104 @@
+--- a/crates/ush_shell/src/process/state.rs
++++ b/crates/ush_shell/src/process/state.rs
+@@ -117,7 +117,7 @@
+     );
+ 
+     script.push_str(&render_alias_prelude(aliases));
+-    script.push_str("eval \"$(cat \"$USH_INTERNAL_CHUNK_FILE\")\"\n");
++    script.push_str("eval \"$(command cat \"$USH_INTERNAL_CHUNK_FILE\")\"\n");
+     script
+ }
+ 
+--- a/crates/ush_config/src/starship.rs
++++ b/crates/ush_config/src/starship.rs
+@@ -115,6 +115,13 @@
+         return Some(PathBuf::from(path));
+     }
+     let base_dirs = BaseDirs::new()?;
++    let xdg = env::var_os("XDG_CONFIG_HOME")
++        .map(PathBuf::from)
++        .unwrap_or_else(|| base_dirs.home_dir().join(".config"))
++        .join("starship.toml");
++    if xdg.exists() {
++        return Some(xdg);
++    }
+     Some(base_dirs.config_dir().join("starship.toml"))
+ }
+ 
+--- a/crates/ush_shell/src/prompt.rs
++++ b/crates/ush_shell/src/prompt.rs
+@@ -14,6 +14,23 @@
+     last_status: i32,
+     starship: Option<&StarshipPromptConfig>,
+ ) -> String {
++    // Use Starship itself so directory formatting, colors and status agree
++    // with the same configuration in every shell.
++    if starship.is_some() {
++        let output = std::process::Command::new("@originStarship@")
++            .args(["prompt", "--status", &last_status.to_string(), "--path"])
++            .arg(cwd)
++            .current_dir(cwd)
++            .env("STARSHIP_SHELL", "ush")
++            .output();
++        if let Ok(output) = output {
++            if output.status.success() && !output.stdout.is_empty() {
++                if let Ok(prompt) = String::from_utf8(output.stdout) {
++                    return prompt;
++                }
++            }
++        }
++    }
+     starship
+         .map(|config| starship::render_prompt(cwd, home, last_status, config))
+         .unwrap_or_else(|| default_prompt(cwd, home, last_status))
+--- a/crates/ush_shell/src/repl/highlight.rs
++++ b/crates/ush_shell/src/repl/highlight.rs
+@@ -3,22 +3,22 @@
+ 
+ use super::{UshHelper, display, syntax};
+ 
+-const COMMAND: &str = "\u{1b}[1;38;5;111m";
+-const KEYWORD: &str = "\u{1b}[1;38;5;180m";
+-const VARIABLE: &str = "\u{1b}[1;38;5;151m";
+-const STRING: &str = "\u{1b}[38;5;114m";
+-const ASSIGNMENT: &str = "\u{1b}[38;5;145m";
+-const OPERATOR: &str = "\u{1b}[38;5;109m";
+-const COMMENT: &str = "\u{1b}[2;38;5;244m";
+-const SELECTION: &str = "\u{1b}[48;5;239;38;5;255m";
+-const ACTIVE_CANDIDATE: &str = "\u{1b}[1;48;5;111;38;5;235m";
+-const ACTIVE_CANDIDATE_DETAIL: &str = "\u{1b}[48;5;111;38;5;236m";
+-const PROMPT_NAME: &str = "\u{1b}[38;5;109m";
+-const PROMPT_PATH: &str = "\u{1b}[1;38;5;223m";
+-const PROMPT_OK: &str = "\u{1b}[1;38;5;150m";
+-const PROMPT_ERR: &str = "\u{1b}[1;38;5;203m";
+-const PROMPT_FALLBACK: &str = "\u{1b}[1;38;5;250m";
+-const HINT: &str = "\u{1b}[2;38;5;245m";
++const COMMAND: &str = "\u{1b}[38;2;123;184;172m";
++const KEYWORD: &str = "\u{1b}[38;2;198;171;214m";
++const VARIABLE: &str = "\u{1b}[38;2;229;192;139m";
++const STRING: &str = "\u{1b}[38;2;167;201;154m";
++const ASSIGNMENT: &str = "\u{1b}[38;2;216;222;233m";
++const OPERATOR: &str = "\u{1b}[38;2;145;182;213m";
++const COMMENT: &str = "\u{1b}[38;2;135;144;159m";
++const SELECTION: &str = "\u{1b}[48;2;62;76;86;38;2;235;239;245m";
++const ACTIVE_CANDIDATE: &str = "\u{1b}[48;2;123;184;172;38;2;40;44;52m";
++const ACTIVE_CANDIDATE_DETAIL: &str = "\u{1b}[48;2;123;184;172;38;2;40;44;52m";
++const PROMPT_NAME: &str = "\u{1b}[38;2;123;184;172m";
++const PROMPT_PATH: &str = "\u{1b}[38;2;216;222;233m";
++const PROMPT_OK: &str = "\u{1b}[38;2;123;184;172m";
++const PROMPT_ERR: &str = "\u{1b}[38;2;217;137;146m";
++const PROMPT_FALLBACK: &str = "\u{1b}[38;2;216;222;233m";
++const HINT: &str = "\u{1b}[38;2;135;144;159m";
+ const RESET: &str = "\u{1b}[0m";
+ 
+ pub fn highlight_line(helper: &UshHelper, line: &str) -> String {
+@@ -129,6 +129,9 @@
+ }
+ 
+ pub fn highlight_prompt(prompt: &str) -> String {
++    if prompt.contains('\u{1b}') {
++        return prompt.to_string();
++    }
+     let Some((body, marker_color)) = parse_prompt_body(prompt) else {
+         return color(PROMPT_FALLBACK, prompt);
+     };
