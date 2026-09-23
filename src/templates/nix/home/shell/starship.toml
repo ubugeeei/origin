@@ -1,6 +1,6 @@
 add_newline = false
 command_timeout = 1000
-format = "$directory$git_branch  $character"
+format = "$directory$git_branch$line_break$character"
 right_format = ""
 
 [character]

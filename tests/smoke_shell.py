@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import pty
+import re
 import select
 import subprocess
 import sys
@@ -77,6 +78,8 @@ class ShellStartup(unittest.TestCase):
             self.assertIn(b"38;2;123;184;172", output)
             self.assertIn(b"~", output)
             self.assertNotIn(b"\x1b]11;", output)
+            visible = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", output.decode(errors="replace"))
+            self.assertRegex(visible, r"~[^\n]*\n.*\( ◠ ‿ ◠\)و")
             child = self.home / "prompt-cd-check"
             child.mkdir()
             os.write(master, b"cd prompt-cd-check\r")
