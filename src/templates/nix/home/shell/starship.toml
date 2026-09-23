@@ -1,6 +1,6 @@
 add_newline = false
 command_timeout = 1000
-format = "${custom.terminal}$directory$git_branch  $character"
+format = "$directory$git_branch  $character"
 right_format = ""
 
 [character]
@@ -9,6 +9,7 @@ success_symbol = '[\( ◠ ‿ ◠\)و](#7bb8ac)'
 vimcmd_symbol = "[❮](#c6abd6)"
 
 [directory]
+use_logical_path = false
 format = "[$path]($style)[$read_only]($read_only_style)"
 home_symbol = "~"
 read_only = " 󰌾"
@@ -24,10 +25,3 @@ symbol = " "
 
 [git_status]
 disabled = true
-
-[custom.terminal]
-when = true
-command = "printf '\\033]11;#282c34\\007\\033]10;#d8dee9\\007\\033]12;#7bb8ac\\007'"
-format = "$output"
-unsafe_no_escape = true
-shell = ["/bin/sh"]

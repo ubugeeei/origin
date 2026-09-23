@@ -76,7 +76,11 @@ class ShellStartup(unittest.TestCase):
             read_until("◠ ‿ ◠".encode())
             self.assertIn(b"38;2;123;184;172", output)
             self.assertIn(b"~", output)
-            self.assertIn(b"\x1b]11;#282c34\x07", output)
+            self.assertNotIn(b"\x1b]11;", output)
+            child = self.home / "prompt-cd-check"
+            child.mkdir()
+            os.write(master, b"cd prompt-cd-check\r")
+            read_until(b"~/prompt-cd-check")
             os.write(master, b"false\r")
             read_until(b"38;2;217;137;146")
         finally:
