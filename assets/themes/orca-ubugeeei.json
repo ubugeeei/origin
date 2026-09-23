@@ -1,0 +1,44 @@
+{
+  "theme": {
+    "id": "manual:ubugeeei",
+    "name": "ubugeeei",
+    "source": "manual",
+    "mode": "dark",
+    "terminal": {
+      "black": "#282c34",
+      "red": "#d98992",
+      "green": "#a7c99a",
+      "yellow": "#e5c08b",
+      "blue": "#91b6d5",
+      "magenta": "#c6abd6",
+      "cyan": "#7bb8ac",
+      "white": "#d8dee9",
+      "brightBlack": "#87909f",
+      "brightRed": "#e7a1a8",
+      "brightGreen": "#bed7b3",
+      "brightYellow": "#eed1a9",
+      "brightBlue": "#b1cce2",
+      "brightMagenta": "#d7c1e3",
+      "brightCyan": "#9fcfc3",
+      "brightWhite": "#ebeff5",
+      "background": "#282c34",
+      "foreground": "#d8dee9",
+      "cursor": "#7bb8ac",
+      "cursorAccent": "#282c34",
+      "selectionBackground": "#3e4c56",
+      "selectionForeground": "#ebeff5"
+    },
+    "importedAt": "2026-09-23T00:00:00.000Z"
+  },
+  "settings": {
+    "terminalThemeDark": "custom:manual:ubugeeei",
+    "terminalFontFamily": "JetBrainsMono Nerd Font Mono",
+    "terminalFontSize": 14,
+    "terminalFontWeight": 400,
+    "terminalFontWeightBold": 700,
+    "terminalLineHeight": 1.08,
+    "terminalCursorStyle": "bar",
+    "terminalCursorBlink": false,
+    "terminalDividerColorDark": "#282c34"
+  }
+}

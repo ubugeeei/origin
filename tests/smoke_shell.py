@@ -35,16 +35,8 @@ class ShellStartup(unittest.TestCase):
             (config / "rc.sh").write_text(
                 f'if [ -d "{self.bin}" ]; then export PATH="{self.bin}:/usr/bin:/bin"; fi\n'
             )
-        (self.home / ".config/starship.toml").write_text("""
-add_newline = false
-format = "$directory  $character"
-[directory]
-format = "[$path]($style)"
-style = "#d8dee9"
-[character]
-success_symbol = '[\\( ◠ ‿ ◠\\)و](#7bb8ac)'
-error_symbol = '[\\( ◠ ‿ ◠\\)و](#d98992)'
-""")
+        config = Path(__file__).resolve().parents[1] / "src/templates/nix/home/shell/starship.toml"
+        (self.home / ".config/starship.toml").write_text(config.read_text())
         self.env = {
             "HOME": str(self.home), "PATH": "/usr/bin:/bin",
             "TERM": "xterm-256color", "COLORTERM": "truecolor", "LANG": "en_US.UTF-8",
@@ -84,6 +76,7 @@ error_symbol = '[\\( ◠ ‿ ◠\\)و](#d98992)'
             read_until("◠ ‿ ◠".encode())
             self.assertIn(b"38;2;123;184;172", output)
             self.assertIn(b"~", output)
+            self.assertIn(b"\x1b]11;#282c34\x07", output)
             os.write(master, b"false\r")
             read_until(b"38;2;217;137;146")
         finally:
