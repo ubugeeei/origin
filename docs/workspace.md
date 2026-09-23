@@ -54,7 +54,7 @@ git clone git@gitlab.com:<group>/<repo>.git "$HOME/Source/gitlab.com/<group>/<re
 - typed Nix: `tnix` means "type nix", the Nix type system developed by ubugeeei; repo ambient declarations live under `src/tnix/types/`, runtime source-of-truth lives under `src/tnix/src/`, `./src/tnix/sync.sh` compiles gitignored outputs into `generated/`, `flake.nix` reads machine config, packages, and darwin modules from there, `src/nix/home/default.nix` is the remaining handwritten Home Manager entrypoint, the checked-in workspace entrypoint is `src/tnix/workspace.tnix`, upstream `tnix` declaration packs are read from `$HOME/Source/github.com/ubugeeei/tnix/registry`, Zed enables the `tnix` extension, and Neovim auto-attaches `tnix-lsp` when it is on PATH for verification work
 - `src/ush/` is source-only and now holds the `.ush` implementation for every repo command, while `_legacy/*.sh` keeps shell entrypoints and compatibility wrappers; bootstrap-oriented entrypoints stay POSIX `sh`, and operational helpers such as `apply`, `clone`, `doctor`, `gc`, `init-repo`, `remove-unused-apple-apps`, `set-default-browser`, and `fetch-github-profile-icon` run through `ush`
 - prompt: starship
-- terminal: JetBrains Mono, a `#282c34` background, and a muted teal palette
+- terminal: JetBrains Mono, a `#121212` background, and a muted teal palette
 
 The origin-packaged ush includes a small patch for alias-safe startup and full
 Starship rendering. Login shells load the shared environment even when launched
