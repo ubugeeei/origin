@@ -42,6 +42,10 @@ jobs:
         working-directory: dotfiles
         run: nix flake check --no-build "path:$PWD"
 
+      - name: Check shell startup script
+        working-directory: dotfiles
+        run: nix shell --inputs-from "path:$PWD" nixpkgs#shellcheck -c shellcheck -s bash src/templates/nix/home/shell/run-fastfetch-once.sh
+
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
