@@ -24,6 +24,7 @@ let
     "Kimi.app"
     "Microsoft Edge.app"
     "Obsidian.app"
+    "Orca.app"
     "Raycast.app"
     "Slack.app"
     "Spotify.app"
@@ -75,6 +76,7 @@ in
       pkgs.firefox
       pkgs.google-chrome
       pkgs.wavebox-mac
+      pkgs.orca-mac
       pkgs.obsidian
       pkgs.slack
       pkgs.spotify

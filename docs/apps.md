@@ -19,6 +19,7 @@ Status as of August 31, 2026.
 - Google Chrome
 - Microsoft Edge
 - Wavebox
+- Orca
 - Gmail
 - Google Calendar
 - Twitter
@@ -71,6 +72,7 @@ These are exposed directly into `/Applications` after `darwin-rebuild switch`.
 - `ChatGPT` comes from the nixpkgs `chatgpt` package. The standalone `Codex.app` was discontinued in July 2026 and folded into the ChatGPT desktop app, so the OpenAI coding agent GUI now ships as `ChatGPT.app` from the `codex-app-prod` channel. The `codex` CLI stays a separate nixpkgs package under Home Manager.
 - `Kimi` is custom-packaged in this repo from Moonshot's public macOS arm64 disk image. The image ships a wrapper installer, so the package pulls the real bundle out of `Kimi Installer.app/Contents/Helpers/`.
 - `Wavebox` is custom-packaged in this repo from Wavebox's public macOS Apple Silicon disk image. nixpkgs removed its own `wavebox` package in June 2025 for lack of maintenance, and that package was an `x86_64-linux` deb anyway, so the attribute here is named `wavebox-mac`. The download page only links to a `latest` alias, so the versioned file that alias resolves to is pinned instead; refresh it with `curl -sIL https://download.wavebox.app/latest/stable/macarm64`.
+- `Orca` is custom-packaged in this repo from the Apple Silicon zip attached to [stablyai/orca](https://github.com/stablyai/orca) GitHub releases. nixpkgs `orca` is the GNOME screen reader, so the attribute here is named `orca-mac`. The bundled `orca` CLI is linked into the package's `bin`. Refresh the pin with `curl -s https://api.github.com/repos/stablyai/orca/releases/latest`, whose asset `digest` is the hash to convert.
 - `rtk` comes from the nixpkgs `rtk` package. It is a CLI proxy that compresses command output before it reaches a coding agent, so it lives in `home.packages` next to `codex`.
 - `worktrunk` comes from the nixpkgs `worktrunk` package, built from [max-sixty/worktrunk](https://github.com/max-sixty/worktrunk). It manages Git worktrees for parallel agent runs and installs as `wt`. Its shell completions cover bash, fish, nushell, and zsh, so `ush` gets none of them here.
 - `Dia` is installed on this machine and already set as the default browser, but it still needs a reliable Nix package source or public macOS download for full reproducibility in this setup.

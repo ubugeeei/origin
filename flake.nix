@@ -222,6 +222,15 @@
             import ./generated/pkgs/vite-plus.nix {
               inherit stdenvNoCC fetchurl lib;
             }) { };
+          orca-mac = prev.callPackage ({
+            stdenvNoCC,
+            fetchurl,
+            unzip,
+            lib,
+          }:
+            import ./generated/pkgs/orca-mac.nix {
+              inherit stdenvNoCC fetchurl unzip lib;
+            }) { };
           wavebox-mac = prev.callPackage ({
             stdenvNoCC,
             fetchurl,

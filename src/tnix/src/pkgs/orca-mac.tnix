@@ -1,0 +1,51 @@
+let
+  package :: dynamic;
+  # @tnix-ignore
+  package = (args :: {
+    stdenvNoCC :: dynamic;
+    fetchurl :: dynamic;
+    unzip :: dynamic;
+    lib :: dynamic;
+  }):
+    let
+      stdenvNoCC = args.stdenvNoCC;
+      fetchurl = args.fetchurl;
+      unzip = args.unzip;
+      lib = args.lib;
+    in
+stdenvNoCC.mkDerivation rec {
+  pname = "orca-mac";
+  version = "1.4.209";
+
+  src = fetchurl {
+    url = "https://github.com/stablyai/orca/releases/download/v${version}/Orca-${version}-arm64-mac.zip";
+    hash = "sha256-fAqTMSM2qAcIkzvvm3vnJvx7LLFOSh+DJB7cCgCqDP8=";
+  };
+
+  nativeBuildInputs = [
+    unzip
+  ];
+
+  sourceRoot = ".";
+
+  dontConfigure = true;
+  dontBuild = true;
+
+  # The bundle is notarized, so the default fixup phase must not rewrite
+  # shebangs or strip binaries inside it; that invalidates the signature and
+  # macOS then refuses to launch the app.
+  dontFixup = true;
+
+  installPhase = builtins.readFile ../../src/templates/nix/pkgs/orca-mac/install.sh;
+
+  meta = {
+    description = "Orca agent workspace IDE for macOS";
+    homepage = "https://github.com/stablyai/orca";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    license = lib.licenses.unfree;
+    platforms = [ "aarch64-darwin" ];
+    maintainers = [ ];
+  };
+};
+in
+package
