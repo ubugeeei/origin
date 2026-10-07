@@ -11,7 +11,7 @@
 
 Personal macOS workstation configuration built with Nix, `nix-darwin`, and Home Manager.
 It is intentionally opinionated and optimized for one machine owner, not for safe one-click onboarding by strangers.
-Implementation source now lives under `src/`; typed Nix source-of-truth is under `src/tnix/`, compiled runtime `.nix` outputs are under `generated/`, the remaining handwritten Nix entrypoint is `src/nix/home/default.nix`, and `.ush` command sources are under `src/ush/`.
+Implementation source now lives under `src/`; typed Nix source-of-truth is under `src/tynix/`, compiled runtime `.nix` outputs are under `generated/`, the remaining handwritten Nix entrypoint is `src/nix/home/default.nix`, and `.ush` command sources are under `src/ush/`.
 
 ## What This Repo Does
 
@@ -31,12 +31,12 @@ Implementation source now lives under `src/`; typed Nix source-of-truth is under
    ./_legacy/init-machine-config.sh
    ```
 
-3. Clone `tnix` into the standard workspace path used by this repo:
+3. Clone `tynix` into the standard workspace path used by this repo:
 
    ```bash
-   mkdir -p "$HOME/Source/github.com/ubugeeei"
-   if [ ! -d "$HOME/Source/github.com/ubugeeei/tnix/.git" ]; then
-     git clone git@github.com:ubugeeei/tnix.git "$HOME/Source/github.com/ubugeeei/tnix"
+   mkdir -p "$HOME/Source/github.com/ubugeeei-prod"
+   if [ ! -d "$HOME/Source/github.com/ubugeeei-prod/tynix/.git" ]; then
+     git clone git@github.com:ubugeeei-prod/tynix.git "$HOME/Source/github.com/ubugeeei-prod/tynix"
    fi
    ```
 
@@ -57,7 +57,7 @@ Implementation source now lives under `src/`; typed Nix source-of-truth is under
 
    ```bash
    ./_legacy/doctor.sh
-   ./src/tnix/sync.sh
+   ./src/tynix/sync.sh
    ```
 
 ## Safety Boundaries
@@ -74,16 +74,16 @@ Implementation source now lives under `src/`; typed Nix source-of-truth is under
 ```text
 .
 |-- flake.nix                 # flake entrypoint and package wiring
-|-- tnix.config.tnix          # tnix project configuration
+|-- tynix.config.tynix        # tynix project configuration
 |-- generated/                # gitignored compiled .nix output
 |-- src/
-|   |-- tnix/                 # typed source-of-truth for generated runtime files
-|   |   |-- src/              # author .tnix here
+|   |-- tynix/                # typed source-of-truth for generated runtime files
+|   |   |-- src/              # author .tynix here
 |   |   |   |-- machine/
 |   |   |   `-- home/
 |   |   |-- types/            # repo-local ambient declarations
-|   |   |-- workspace.tnix    # checked-in workspace entrypoint
-|   |   `-- sync.sh           # compile .tnix -> runtime .nix
+|   |   |-- workspace.tynix   # checked-in workspace entrypoint
+|   |   `-- sync.sh           # compile .tynix -> runtime .nix
 |   |-- nix/
 |   |   `-- home/            # remaining handwritten Home Manager entrypoint
 |   |-- templates/            # tracked helper templates such as machine.local.env.example
@@ -92,7 +92,7 @@ Implementation source now lives under `src/`; typed Nix source-of-truth is under
 `-- docs/                     # onboarding and operational notes
 ```
 
-Edit `.tnix` under `src/tnix/src/` and run `./src/tnix/sync.sh`; generated runtime files land under `generated/`, and `flake.nix` imports packages, machine config, and darwin modules from there while `src/nix/home/default.nix` remains the handwritten Home Manager entrypoint. Local machine overrides still live at `machine/local.env`, but that directory is created only when `./_legacy/init-machine-config.sh` is run; the tracked example now lives at [src/templates/machine.local.env.example](src/templates/machine.local.env.example).
+Edit `.tynix` under `src/tynix/src/` and run `./src/tynix/sync.sh`; generated runtime files land under `generated/`, and `flake.nix` imports packages, machine config, and darwin modules from there while `src/nix/home/default.nix` remains the handwritten Home Manager entrypoint. Local machine overrides still live at `machine/local.env`, but that directory is created only when `./_legacy/init-machine-config.sh` is run; the tracked example now lives at [src/templates/machine.local.env.example](src/templates/machine.local.env.example).
 
 ## Further Reading
 

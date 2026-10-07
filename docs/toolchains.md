@@ -59,7 +59,7 @@ compiler. A project that requires another GHC version can use a Nix devShell.
 
 ## Validation
 
-GitHub Actions checks the tnix workspace and flake, tests Rust selector
+GitHub Actions checks the tynix workspace and flake, tests Rust selector
 precedence and target preservation, builds all managed tools, and runs CLI
 smoke checks. Machine-specific verification also checks Node/pnpm through
 Vite+, Rust in Vize and UF, and command resolution after Home Manager applies.

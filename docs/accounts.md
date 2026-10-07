@@ -29,8 +29,8 @@ Git behavior in this setup:
 
 Relevant repo config:
 
-- Git and SSH defaults source: [src/tnix/src/home/git.tnix](../src/tnix/src/home/git.tnix)
-- machine-specific Git identity defaults source: [src/tnix/src/machine/default.tnix](../src/tnix/src/machine/default.tnix)
+- Git and SSH defaults source: [src/tynix/src/home/git.tynix](../src/tynix/src/home/git.tynix)
+- machine-specific Git identity defaults source: [src/tynix/src/machine/default.tynix](../src/tynix/src/machine/default.tynix)
 - local machine override template: [src/templates/machine.local.env.example](../src/templates/machine.local.env.example)
 - Home Manager entrypoint: [src/nix/home/default.nix](../src/nix/home/default.nix)
 

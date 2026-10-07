@@ -1,0 +1,122 @@
+# Repo-specific ambient typing for the runtime Nix entrypoints imported from
+# `src/tynix/workspace.tynix`.
+
+type DotfilesMachine = {
+  system :: NixpkgsSystem;
+  username :: String;
+  homeDirectory :: String;
+  workspaceRoot :: String;
+  appNamespace :: String;
+  networking :: {
+    computerName :: String;
+    hostName :: String;
+    localHostName :: String;
+  };
+  git :: {
+    userName :: String | Null;
+    userEmail :: String | Null;
+    githubUser :: String | Null;
+    signingKey :: String | Null;
+    gpgFormat :: String | Null;
+  };
+  security :: {
+    touchIdSudoAuth :: Bool;
+  };
+};
+
+type DotfilesShellEnvironment = {
+  loginShell :: String;
+  managedPathEntries :: List String;
+  sessionVariables :: dynamic;
+  workspaceRoot :: String;
+  launchdEnvVariables :: dynamic;
+};
+
+type DotfilesShellEnvironmentFactory = dynamic -> DotfilesShellEnvironment;
+
+type DotfilesHomeModuleArgs = {
+  config :: dynamic;
+  lib :: dynamic;
+  machine :: DotfilesMachine;
+  pkgs :: dynamic;
+  username :: String;
+  mkShellEnvironment :: DotfilesShellEnvironmentFactory;
+};
+
+type DotfilesShellModuleArgs = {
+  config :: dynamic;
+  lib :: NixpkgsLib;
+  pkgs :: dynamic;
+};
+
+type DotfilesEditorModuleArgs = {
+  lib :: NixpkgsLib;
+  pkgs :: dynamic;
+};
+
+type DotfilesGitModuleArgs = {
+  lib :: NixpkgsLib;
+  machine :: DotfilesMachine;
+};
+
+type DotfilesDevtoolsModuleArgs = {
+  pkgs :: dynamic;
+};
+
+type DotfilesDarwinModuleArgs = {
+  config :: dynamic;
+  machine :: DotfilesMachine;
+  pkgs :: NixpkgsPkgs;
+  username :: String;
+  mkShellEnvironment :: DotfilesShellEnvironmentFactory;
+};
+
+type DotfilesDesktopAppsModuleArgs = {
+  config :: dynamic;
+  pkgs :: NixpkgsPkgs;
+};
+
+type DotfilesHomeModule = DotfilesHomeModuleArgs -> dynamic;
+type DotfilesShellModule = DotfilesShellModuleArgs -> dynamic;
+type DotfilesEditorModule = DotfilesEditorModuleArgs -> dynamic;
+type DotfilesGitModule = DotfilesGitModuleArgs -> dynamic;
+type DotfilesDevtoolsModule = DotfilesDevtoolsModuleArgs -> dynamic;
+type DotfilesDarwinModule = DotfilesDarwinModuleArgs -> dynamic;
+type DotfilesDesktopAppsModule = DotfilesDesktopAppsModuleArgs -> dynamic;
+
+type DotfilesFlakeInputs = {
+  self :: dynamic;
+  nixpkgs :: NixpkgsFlake;
+  nix-darwin :: NixDarwinFlake;
+  home-manager :: HomeManagerFlake;
+  ush :: dynamic;
+  rust-overlay :: dynamic;
+};
+
+type DotfilesFlakeOutputs = {
+  packages :: dynamic;
+  homeConfigurations :: dynamic;
+  darwinConfigurations :: {
+    workstation :: dynamic;
+  };
+};
+
+type DotfilesFlake = {
+  description :: String;
+  inputs :: {
+    nixpkgs :: NixFlakeInputSpec;
+    nix-darwin :: NixFlakeInputSpec;
+    home-manager :: NixFlakeInputSpec;
+    ush :: NixFlakeInputSpec;
+    rust-overlay :: NixFlakeInputSpec;
+  };
+  outputs :: DotfilesFlakeInputs -> DotfilesFlakeOutputs;
+};
+
+declare "../../../flake.nix" {
+  default :: DotfilesFlake;
+};
+
+declare "../../nix/home/default.nix" {
+  default :: DotfilesHomeModule;
+};

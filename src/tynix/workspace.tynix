@@ -1,0 +1,33 @@
+let
+  flake :: DotfilesFlake;
+  flake = import ../../flake.nix;
+
+  machine :: DotfilesMachine;
+  machine = import ./src/machine/default.tynix;
+
+  homeModule :: DotfilesHomeModule;
+  homeModule = import ../nix/home/default.nix;
+
+  shellModule :: DotfilesShellModule;
+  shellModule = import ./src/home/shell.tynix;
+
+  editorModule :: DotfilesEditorModule;
+  editorModule = import ./src/home/editor.tynix;
+
+  gitModule :: DotfilesGitModule;
+  gitModule = import ./src/home/git.tynix;
+
+  devtoolsModule :: DotfilesDevtoolsModule;
+  devtoolsModule = import ./src/home/devtools.tynix;
+
+  darwinCoreModule :: DotfilesDarwinModule;
+  darwinCoreModule = import ./src/modules/darwin/core.tynix;
+
+  desktopAppsModule :: DotfilesDesktopAppsModule;
+  desktopAppsModule = import ./src/modules/darwin/desktop-apps.tynix;
+in
+{
+  description = flake.description;
+  host = machine.networking.localHostName;
+  primaryUser = machine.username;
+}

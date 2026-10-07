@@ -36,7 +36,7 @@ fi
 
 load_machine_env
 
-"$ROOT/src/tnix/sync.sh"
+"$ROOT/src/tynix/sync.sh"
 
 if command -v darwin-rebuild >/dev/null 2>&1; then
   sudo /usr/bin/env \
