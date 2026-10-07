@@ -1,0 +1,16 @@
+{
+  name = "dotfiles";
+  sourceDir = ./src/tynix/src;
+  entry = ./src/tynix/workspace.tynix;
+  declarationDir = ./src/tynix/types;
+  declarationPacks = [
+    ../../ubugeeei-prod/tynix/registry/workspace/builtins.d.tynix
+    ../../ubugeeei-prod/tynix/registry/workspace/tynix.config.d.tynix
+    ../../ubugeeei-prod/tynix/registry/ecosystem/nixpkgs-lib.d.tynix
+    ../../ubugeeei-prod/tynix/registry/ecosystem/nixpkgs-pkgs.d.tynix
+    ../../ubugeeei-prod/tynix/registry/ecosystem/flake-ecosystem.d.tynix
+  ];
+  buildDir = ./generated;
+  generatedDeclarationDir = ../.cache/tynix/dotfiles/types;
+  builtins = false;
+}

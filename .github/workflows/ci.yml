@@ -14,36 +14,38 @@ jobs:
     env:
       NIX_CONFIG: experimental-features = nix-command flakes
       ORIGIN_SYSTEM: aarch64-darwin
-      TNIX_REPO: ${{ github.workspace }}/tnix
+      TYNIX_REPO: ${{ github.workspace }}/ubugeeei-prod/tynix
     steps:
+      # Mirror the local <owner>/<repo> workspace layout so the relative
+      # declarationPacks paths in tynix.config.tynix resolve.
       - name: Checkout dotfiles
         uses: actions/checkout@v6
         with:
-          path: dotfiles
+          path: ubugeeei/origin
 
-      - name: Checkout tnix
+      - name: Checkout tynix
         uses: actions/checkout@v6
         with:
-          repository: ubugeeei/tnix
-          path: tnix
+          repository: ubugeeei-prod/tynix
+          path: ubugeeei-prod/tynix
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v22
 
-      - name: Generate runtime Nix from tnix
-        working-directory: dotfiles
-        run: ./src/tnix/sync.sh
+      - name: Generate runtime Nix from tynix
+        working-directory: ubugeeei/origin
+        run: ./src/tynix/sync.sh
 
-      - name: Check tnix workspace
-        working-directory: dotfiles
-        run: nix run "path:$TNIX_REPO#tnix" -- check ./src/tnix/workspace.tnix
+      - name: Check tynix workspace
+        working-directory: ubugeeei/origin
+        run: nix run "path:$TYNIX_REPO#tynix" -- check ./src/tynix/workspace.tynix
 
       - name: Check flake evaluation
-        working-directory: dotfiles
+        working-directory: ubugeeei/origin
         run: nix flake check --no-build "path:$PWD"
 
       - name: Check shell startup script
-        working-directory: dotfiles
+        working-directory: ubugeeei/origin
         run: nix shell --inputs-from "path:$PWD" nixpkgs#shellcheck -c shellcheck -s bash src/templates/nix/home/shell/run-fastfetch-once.sh
 
       - uses: actions/setup-python@v6
@@ -51,21 +53,21 @@ jobs:
           python-version: "3.13"
 
       - name: Test Rust toolchain selection
-        working-directory: dotfiles
+        working-directory: ubugeeei/origin
         run: python3 -m unittest discover -s tests -v
 
       - name: Build managed toolchains
-        working-directory: dotfiles
+        working-directory: ubugeeei/origin
         run: nix build --out-link result-toolchains "path:$PWD#origin-toolchains"
 
       - name: Build and test GUI shell startup and prompt
-        working-directory: dotfiles
+        working-directory: ubugeeei/origin
         run: |
           nix build --out-link result-ush "path:$PWD#ush"
           python3 tests/smoke_shell.py ./result-ush/bin/ush -v
 
       - name: Smoke test managed commands and task-only mise
-        working-directory: dotfiles
+        working-directory: ubugeeei/origin
         run: |
           set -euo pipefail
           for command in bun deno jj just uv dprint git-cliff wasm-pack pkl vp cargo rustc ghc cabal stack; do

@@ -10,14 +10,14 @@ Repository script policy:
 - `_legacy/bootstrap-macos.sh`, `_legacy/init-machine-config.sh`, and `_legacy/print-machine-env.sh` stay POSIX `sh` as the bootstrap-safe entrypoints, even though matching `.ush` sources now exist
 - wrappers such as `apply`, `clone`, `doctor`, `init-repo`, `remove-unused-apple-apps`, `set-default-browser`, and `fetch-github-profile-icon` delegate into `src/ush/*.ush`
 - the `_legacy/run-ush.sh` wrapper can fall back to `nix run "path:$PWD#ush"` before the login shell switch has been applied
-- `./src/tnix/sync.sh` compiles typed `.tnix` sources into the runtime `.nix` files that `flake.nix` imports from `generated/`
+- `./src/tynix/sync.sh` compiles typed `.tynix` sources into the runtime `.nix` files that `flake.nix` imports from `generated/`
 
 ## Repo-Specific Tools
 
 - `ush` means "ubugeeei sh". It is the modern `sh` developed by ubugeeei, and this repo uses it for the main script implementations under `src/ush/*.ush` plus the default login shell.
-- `tnix` means "type nix". It is the Nix type system developed by ubugeeei, and this repo uses it for typed Nix sources under `src/tnix/`, repo-local ambient declarations under `src/tnix/types/`, and compiled runtime `.nix` outputs under `generated/`.
+- `tynix` ("tie-nix") means "typed Nix". It is the Nix type system developed by ubugeeei, and this repo uses it for typed Nix sources under `src/tynix/`, repo-local ambient declarations under `src/tynix/types/`, and compiled runtime `.nix` outputs under `generated/`.
 - `Vide` is the IDE developed by ubugeeei. It is the editor used day to day, but it is not open-source, so this repo does not try to package or reproduce it.
-- The languages used most often in this setup are `Rust`, `TypeScript` with `Vue`, `tnix`, and `Haskell`.
+- The languages used most often in this setup are `Rust`, `TypeScript` with `Vue`, `tynix`, and `Haskell`.
 
 ## What This Repo Manages
 
@@ -35,7 +35,7 @@ Repository script policy:
 - Zed and Neovim config, plus VS Code availability for editor and LSP verification
 - Docker CLI workflow with Colima
 - JavaScript / TypeScript toolchains with `Vue` workflow support
-- Rust, `tnix`, Haskell, and Go toolchains with LSP / formatter support where available
+- Rust, `tynix`, Haskell, and Go toolchains with LSP / formatter support where available
 - Codex CLI
 - AWS CLI
 - Google Workspace CLI (`gam`)
@@ -61,12 +61,12 @@ Repository script policy:
    ./_legacy/init-machine-config.sh
    ```
 
-4. Clone `tnix` into the standard workspace path used by this repo:
+4. Clone `tynix` into the standard workspace path used by this repo:
 
    ```bash
-   mkdir -p "$HOME/Source/github.com/ubugeeei"
-   if [ ! -d "$HOME/Source/github.com/ubugeeei/tnix/.git" ]; then
-     git clone git@github.com:ubugeeei/tnix.git "$HOME/Source/github.com/ubugeeei/tnix"
+   mkdir -p "$HOME/Source/github.com/ubugeeei-prod"
+   if [ ! -d "$HOME/Source/github.com/ubugeeei-prod/tynix/.git" ]; then
+     git clone git@github.com:ubugeeei-prod/tynix.git "$HOME/Source/github.com/ubugeeei-prod/tynix"
    fi
    ```
 
@@ -94,8 +94,8 @@ Repository script policy:
 
    ```bash
    ./_legacy/doctor.sh
-   ./src/tnix/sync.sh
-   nix run "path:$HOME/Source/github.com/ubugeeei/tnix#tnix" -- check ./src/tnix/workspace.tnix
+   ./src/tynix/sync.sh
+   nix run "path:$HOME/Source/github.com/ubugeeei-prod/tynix#tynix" -- check ./src/tynix/workspace.tynix
    ```
 
 Notes:
@@ -107,7 +107,7 @@ Notes:
 - The canonical flake target stays `workstation`; local scripts invoke it through `path:$PWD#workstation` so uncommitted local files are included during evaluation. The actual macOS `hostName` and `localHostName` still come from `machine/local.env` or the detected machine defaults.
 - `ORIGIN_TOUCH_ID_SUDO_AUTH` defaults to `false`. Turn it on only if you want nix-darwin to manage Touch ID for `sudo` on that Mac. When it is on, `/etc/pam.d/sudo_local` gets `pam_tid.so` plus `pam_reattach.so`, so Touch ID also works for `sudo` inside `tmux`.
 - On the first `switch`, existing dotfiles managed by Home Manager are backed up with the `.before-origin` suffix instead of being overwritten in place.
-- This repo expects `ubugeeei/tnix` at `$HOME/Source/github.com/ubugeeei/tnix` so `tnix.config.tnix` can read upstream declaration packs and `./src/tnix/sync.sh` can compile runtime `.nix` files without copying registry packs into this repository.
+- This repo expects `ubugeeei-prod/tynix` at `$HOME/Source/github.com/ubugeeei-prod/tynix` so `tynix.config.tynix` can read upstream declaration packs and `./src/tynix/sync.sh` can compile runtime `.nix` files without copying registry packs into this repository.
 - `Vide` remains a manual install and personal workflow choice. `Zed` is the next editor in regular use, while `VS Code` and `Neovim` are mainly there to validate LSP integrations for ubugeeei tooling.
 
 ## Current App Status

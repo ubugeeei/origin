@@ -1,0 +1,57 @@
+let
+  package :: dynamic;
+  # @tynix-ignore
+  package = (args :: {
+    stdenvNoCC :: dynamic;
+    fetchurl :: dynamic;
+    xar :: dynamic;
+    cpio :: dynamic;
+    gzip :: dynamic;
+    lib :: dynamic;
+  }):
+    let
+      stdenvNoCC = args.stdenvNoCC;
+      fetchurl = args.fetchurl;
+      xar = args.xar;
+      cpio = args.cpio;
+      gzip = args.gzip;
+      lib = args.lib;
+    in
+stdenvNoCC.mkDerivation rec {
+  pname = "microsoft-edge-mac";
+  version = "152.0.4191.53";
+
+  src = fetchurl {
+    url = "https://msedge.sf.dl.delivery.mp.microsoft.com/filestreamingservice/files/e1d846ad-7733-4ec3-814c-02462484c4b3/MicrosoftEdge-${version}.pkg";
+    hash = "sha256-FqkQHKNTG4yhkugpVj7xCg8/rLOZ0zcejb95Eug85Ec=";
+  };
+
+  nativeBuildInputs = [
+    xar
+    cpio
+    gzip
+  ];
+
+  dontUnpack = true;
+
+  # Edge is notarized and ships shell scripts inside the bundle, so the default
+  # fixup phase would rewrite their shebangs and invalidate the code signature.
+  dontFixup = true;
+
+  installPhase =
+    builtins.replaceStrings
+      [ "@VERSION@" ]
+      [ version ]
+      (builtins.readFile ../../src/templates/nix/pkgs/microsoft-edge-mac/install.sh);
+
+  meta = {
+    description = "Microsoft Edge browser for macOS";
+    homepage = "https://www.microsoft.com/en-us/edge/business/download";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    license = lib.licenses.unfree;
+    platforms = lib.platforms.darwin;
+    maintainers = [ ];
+  };
+};
+in
+package

@@ -1,0 +1,83 @@
+let
+  module :: DotfilesEditorModule;
+  module = (args :: DotfilesEditorModuleArgs):
+    let
+      lib :: NixpkgsLib;
+      lib = args.lib;
+
+      pkgs :: dynamic;
+      pkgs = args.pkgs;
+
+      initLua :: String;
+      initLua = "vim.opt.number = true; vim.opt.relativenumber = true; vim.opt.expandtab = true; vim.opt.shiftwidth = 2; vim.opt.tabstop = 2; vim.opt.smartindent = true; vim.filetype.add({ extension = { tynix = 'tynix' }, pattern = { ['.*%.d%.tynix'] = 'tynix' } }); vim.api.nvim_create_autocmd('FileType', { pattern = 'tynix', callback = function(args) if vim.fn.executable('tynix-lsp') ~= 1 then return end; vim.lsp.start({ name = 'tynix-lsp', cmd = { 'tynix-lsp' }, root_dir = vim.fs.root(args.buf, { 'tynix.config.tynix', 'flake.nix', '.git' }) or vim.loop.cwd(), }) end, })";
+
+      neovimExtraPackages :: List dynamic;
+      # @tynix-ignore
+      neovimExtraPackages = [
+        pkgs.lua-language-server
+        pkgs.nil
+        pkgs.stylua
+        pkgs.tree-sitter
+      ];
+
+      ushProgram :: String;
+      # @tynix-ignore
+      ushProgram = "${pkgs.ush}/bin/ush";
+    in
+    {
+      programs = {
+        neovim = {
+          enable = true;
+          defaultEditor = false;
+          viAlias = true;
+          vimAlias = true;
+          # Adopt the current Home Manager defaults instead of the pre-26.05
+          # legacy ones; nothing configured here needs those providers.
+          withRuby = false;
+          withPython3 = false;
+          extraPackages = neovimExtraPackages;
+          initLua = initLua;
+        };
+
+        zed-editor = {
+          enable = true;
+          extensions = [
+            "nix"
+            "tynix"
+            "toml"
+            "make"
+            "dockerfile"
+            "git-firefly"
+          ];
+          userSettings = {
+            auto_update = false;
+            base_keymap = "VSCode";
+            buffer_font_family = "Nova";
+            buffer_font_fallbacks = [ "JetBrainsMono Nerd Font Mono" ];
+            features = {
+              edit_prediction_provider = "copilot";
+            };
+            file_types = {
+              tynix = [ "*.d.tynix" ];
+            };
+            format_on_save = "on";
+            relative_line_numbers = true;
+            terminal = {
+              font_family = "JetBrainsMono Nerd Font Mono";
+              shell = {
+                program = ushProgram;
+              };
+            };
+            theme = {
+              mode = "system";
+            };
+            ui_font_family = "Nova";
+            ui_font_fallbacks = [ "JetBrainsMono Nerd Font Mono" ];
+            ui_font_size = 16;
+            buffer_font_size = 15;
+          };
+        };
+      };
+    };
+in
+module

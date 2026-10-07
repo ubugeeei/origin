@@ -43,7 +43,7 @@ if command -v ush >/dev/null 2>&1; then
 fi
 
 if command -v nix >/dev/null 2>&1; then
-  "$repo_root/src/tnix/sync.sh"
+  "$repo_root/src/tynix/sync.sh"
   exec env \
     RUN_USH_SCRIPT_NAME="$script_name" \
     RUN_USH_ARG1="$arg1" \
